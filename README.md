@@ -47,7 +47,7 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path, ou
 
 ### Gray Matter microstructure models description from the Generalized Exchange Model
 
-![](images/GM_models.png)
+![](images/GM_models_from_GEM.png)
 
 ## Prerequisites
 
