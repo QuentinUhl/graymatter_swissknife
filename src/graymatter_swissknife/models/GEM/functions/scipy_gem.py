@@ -450,7 +450,9 @@ def second_pulse_jacobian(S_delta, D, R, radius, Ds0, R_texs, R_texd, R_fn, R_fs
 
 
 def gem_optimized_mse_jacobian(parameters, acq_parameters, signal_gt):
-    gem_vec, gem_jac_vec = gem_jacobian_concatenated_from_vector(parameters, acq_parameters)
+    gem_vec, gem_jac_vec = gem_jacobian_concatenated_from_vector(parameters, acq_parameters.b,
+                                                                 acq_parameters.td,
+                                                                 acq_parameters.small_delta)
     if acq_parameters.ndim == 1:
         mse_jacobian = np.sum(2 * gem_jac_vec * broad7(gem_vec - signal_gt), axis=0)
     elif acq_parameters.ndim == 2:

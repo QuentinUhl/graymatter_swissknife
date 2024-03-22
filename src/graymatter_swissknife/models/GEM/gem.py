@@ -11,7 +11,7 @@ class Gem(MicroStructModel):
     n_params = 7
     param_names = ["t_exs", "t_exd", "Dd", "De", "fn", "radius", "fsn"]
     classic_limits = np.array([[1, 150], [1, 150], [0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5]])
-    grid_search_nb_points = [12, 8, 5, 5, 5, 5]
+    grid_search_nb_points = [12, 8, 5, 5, 5, 5, 5]
     has_rician_mean_correction = False
 
     def __init__(self, param_lim=classic_limits, invert_tex=False):
