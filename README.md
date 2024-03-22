@@ -1,10 +1,10 @@
-# Neurite Exchange Imaging (NEXI) model estimator for gray matter diffusion MRI
+# Gray Matter Microstructure models estimator for gray matter diffusion MRI
 
-[![PyPI - Version](https://img.shields.io/pypi/v/nexi.svg)](https://pypi.org/project/nexi)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/nexi)](#)
-[![GitHub](https://img.shields.io/github/license/QuentinUhl/nexi)](#)
-[![GitHub top language](https://img.shields.io/github/languages/top/QuentinUhl/nexi?color=lightgray)](#)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nexi.svg)](https://pypi.org/project/nexi)
+[![PyPI - Version](https://img.shields.io/pypi/v/graymatter_swissknife.svg)](https://pypi.org/project/graymatter_swissknife)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/graymatter_swissknife)](#)
+[![GitHub](https://img.shields.io/github/license/QuentinUhl/graymatter_swissknife)](#)
+[![GitHub top language](https://img.shields.io/github/languages/top/QuentinUhl/graymatter_swissknife?color=lightgray)](#)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/graymatter_swissknife.svg)](https://pypi.org/project/graymatter_swissknife)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 -----
@@ -33,7 +33,7 @@ To estimate any gray matter model parameters with Nonlinear Least Squares using 
 estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path, out_path)
 ```
 
-`model_name`: Choose your gray matter model between `'Nexi'` (or `'Nexi_Narrow_Pulse_Approximation'`), `'Smex'` (or `'Nexi_Wide_Pulse'`), `'Sandi'`, `'Sandix'` and `'Gem'`.
+`model_name`: Choose your gray matter model between `'Nexi'` (or `'Nexi_Narrow_Pulses_Approximation'`), `'Smex'` (or `'Nexi_Wide_Pulses'`), `'Sandi'`, `'Sandix'` and `'Gem'`.
 
 `dwi_path`: The path to the diffusion-weighted image (DWI) data in NIfTI format. This data contains the preprocessed diffusion-weighted volumes acquired from your imaging study.
 
