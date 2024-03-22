@@ -12,6 +12,7 @@ class NexiRiceMean(MicroStructModel):
     n_params = 5
     param_names = ["t_ex", "Di", "De", "f", "sigma"]
     classic_limits = np.array([[1, 150], [0.1, 3.5], [0.1, 3.5], [0.1, 0.9], [0, 100]])
+    grid_search_nb_points = [15, 12, 8, 8]
     has_rician_mean_correction = True
     non_corrected_model = Nexi()
 

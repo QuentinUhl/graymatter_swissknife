@@ -13,6 +13,7 @@ class SandixRiceMean(MicroStructModel):
     n_params = 7
     param_names = ["t_ex", "Di", "De", "f", "rs", "fs", "sigma"]
     classic_limits = np.array([[1, 150], [0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5], [0, 100]])
+    grid_search_nb_points = [12, 8, 5, 5, 5, 5]
     has_rician_mean_correction = True
     non_corrected_model = Sandix()
 

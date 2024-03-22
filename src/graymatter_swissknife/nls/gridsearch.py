@@ -7,7 +7,7 @@ from ..models.rice_noise.rice_mean import rice_mean
 
 
 def find_nls_initialization(
-    signal, sigma, nb_estimates, acq_param, microstruct_model, grid_search_param_lim, debug=False
+    signal, sigma, nb_estimates, acq_param, microstruct_model, grid_search_param_lim, grid_search_nb_points, debug=False
 ):
     """
     Find the initialization of the Non-linear least squares algorithm.
@@ -23,7 +23,6 @@ def find_nls_initialization(
     # Access to grid search hyperparameters
     n_cores = -1  # multiprocessing.cpu_count()
     overlap = 1  # from 0 to 1 : 0 mean no overlap of the grid ranges, 1 means complete overlap
-    nb_points = [15, 12, 8, 8]
 
     # Check that the number of parameters in the grid search and in the model are the same
     assert microstruct_model.n_params == len(
@@ -42,7 +41,7 @@ def find_nls_initialization(
 
     # Generate the parameter grid combinations (avoiding the limits of the bounds)
     param_grid = [
-        np.linspace(grid_search_param_lim[p][0], grid_search_param_lim[p][1], nb_points[p] + 2)[1:-1].tolist()
+        np.linspace(grid_search_param_lim[p][0], grid_search_param_lim[p][1], grid_search_nb_points[p] + 2)[1:-1].tolist()
         for p in range(n_moving_param)
     ]
     grid_combinations = list(itertools.product(*param_grid))
@@ -93,7 +92,7 @@ def find_nls_initialization(
         initial_gt[:, parameter] += (
             (1 + overlap)
             * (grid_search_param_lim[parameter][1] - grid_search_param_lim[parameter][0])
-            / (nb_points[parameter] + 1)
+            / (grid_search_nb_points[parameter] + 1)
             * (np.random.rand(nb_estimates) - 0.5)
         )
 

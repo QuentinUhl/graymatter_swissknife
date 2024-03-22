@@ -11,6 +11,7 @@ class Sandi(MicroStructModel):
     n_params = 5
     param_names = ["Di", "De", "f", "rs", "fs"]
     classic_limits = np.array([[0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5]])
+    grid_search_nb_points = [15, 8, 8, 12, 8]
     has_rician_mean_correction = False
 
     def __init__(self, param_lim=classic_limits, invert_tex=False):

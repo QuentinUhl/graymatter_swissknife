@@ -12,6 +12,7 @@ class SandiRiceMean(MicroStructModel):
     n_params = 6
     param_names = ["Di", "De", "f", "rs", "fs", "sigma"]
     classic_limits = np.array([[0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5], [0, 100]])
+    grid_search_nb_points = [15, 8, 8, 12, 8]
     has_rician_mean_correction = True
     non_corrected_model = Sandi()
 

@@ -63,6 +63,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, out_path
     # Define the parameter limits for the Non-Linear Least Squares
     microstruct_model = find_model(model_name)
     nls_param_lim = microstruct_model.param_lim
+    grid_search_nb_points = microstruct_model.grid_search_nb_points
     max_nls_verif = 1
 
     # Compute the initial Ground Truth to start the NLS with if requested
@@ -70,7 +71,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, out_path
     initial_gt = None
     if initial_grid_search:
         initial_gt = find_nls_initialization(
-            signal, None, voxel_nb, acq_param, microstruct_model, nls_param_lim, debug=debug
+            signal, None, voxel_nb, acq_param, microstruct_model, nls_param_lim, grid_search_nb_points, debug=debug
         )
 
     # Compute the NLS estimations
