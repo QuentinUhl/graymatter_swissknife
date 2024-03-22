@@ -45,6 +45,10 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path, ou
 
 `out_path`: The folder where the estimated parameters will be saved as output.
 
+### Gray Matter microstructure model description from the Generalized Exchange Model
+
+![](images/GM_models.png)
+
 ## Prerequisites
 
 ### Data Acquisition
