@@ -13,6 +13,7 @@ def test_estimate_model_noiseless():
         'tests/graymatter_swissknife/data/phantom.nii.gz',
         'tests/graymatter_swissknife/data/phantom.bval',
         'tests/graymatter_swissknife/data/phantom.td',
+        None,
         'tests/graymatter_swissknife/data/nexi',
         mask_path='tests/graymatter_swissknife/data/mask.nii.gz',
         debug=False,

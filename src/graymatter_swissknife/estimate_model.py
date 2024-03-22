@@ -10,9 +10,9 @@ from .nls.nls import nls_parallel
 from .nls.gridsearch import find_nls_initialization
 
 
-def estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path, out_path, mask_path=None, debug=False):
+def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_noisemap_path, out_path, mask_path=None, debug=False):
     """
-    Estimate the NEXI model parameters for a given set of preprocessed signals,
+    Estimate the model parameters for a given set of preprocessed signals,
     providing the b-values, diffusion times and low b-values noise map. A mask is optional but highly recommended.
 
     Parameters
@@ -65,9 +65,9 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path
     sigma = powder_average_signal_npz['sigma']
     bvals = powder_average_signal_npz['b']
     td = powder_average_signal_npz['td']
-    acq_param = AcquisitionParameters(bvals, td, small_delta=None)
+    acq_param = AcquisitionParameters(bvals, td, small_delta=small_delta)
 
-    # Estimate the NEXI model parameters
+    # Estimate the model parameters
 
     # Define the parameter limits for the Non-Linear Least Squares
     microstruct_model = find_model(model_name + 'RiceMean')
@@ -94,7 +94,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path
         initial_gt=initial_gt,
     )
 
-    # Save the NEXI model parameters
+    # Save the model parameters
     if debug:
         np.savez_compressed(
             f'{out_path}/{microstruct_model.name.lower()}_estimations.npz',
@@ -102,7 +102,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path
             estimation_init=estimation_init,
         )
 
-    # Save the NEXI model parameters as nifti
+    # Save the model parameters as nifti
     save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path)
 
 

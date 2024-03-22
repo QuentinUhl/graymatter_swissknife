@@ -10,7 +10,7 @@ from .nls.nls import nls_parallel
 from .nls.gridsearch import find_nls_initialization
 
 
-def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, out_path, mask_path=None, debug=False):
+def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_delta, out_path, mask_path=None, debug=False):
     """
     Estimate the noiseless NEXI model parameters for a given set of preprocessed signals,
     providing the b-values and diffusion times. A mask is optional but highly recommended.
@@ -45,7 +45,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, out_path
     powder_average_path, updated_bvals_path, updated_td_path = powder_average(
         dwi_path, bvals_path, td_path, mask_path, out_path, debug=debug
     )
-    # NEXI without Rician Mean correction
+    # Model without Rician Mean correction
     powder_average_signal_npz_filename = save_data_as_npz(
         powder_average_path, updated_bvals_path, updated_td_path, out_path, debug=debug
     )
@@ -56,7 +56,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, out_path
     voxel_nb = len(signal)
     bvals = powder_average_signal_npz['b']
     td = powder_average_signal_npz['td']
-    acq_param = AcquisitionParameters(bvals, td, small_delta=None)
+    acq_param = AcquisitionParameters(bvals, td, small_delta=small_delta)
 
     # Estimate the microstructure model parameters
 
