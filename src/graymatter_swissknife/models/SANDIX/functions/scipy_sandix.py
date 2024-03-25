@@ -16,14 +16,14 @@ in: Proc. Intl. Soc. Mag. Reson. Med. 2024.
 Presented at the Annual Meeting of the ISMRM, Singapore, Singapore, p. 7970.
 """
 
-# Implementation of the Nexi Dot model in scipy
+# Implementation of the SANDIX model in scipy
 import numpy as np
 from ...NEXI.functions.scipy_smex import smex_signal, smex_jacobian_concatenated
 from ...struct_functions.scipy_sphere import sphere_murdaycotts, sphere_jacobian
 
 
 #######################################################################################################################
-# Nexi Sphere Model
+# SANDIX Model
 #######################################################################################################################
 
 
@@ -47,7 +47,7 @@ def sandix_signal(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
     """
     fs_tilde = f * fs
     f_tilde = f * (1 - fs) / (1 - fs_tilde)
-    return fs_tilde*sphere_murdaycotts(rs, 3, b, big_delta, small_delta) + (1-fs_tilde)*nexi_finite_pulses_signal(tex, Di, De, f_tilde, b, big_delta, small_delta)
+    return fs_tilde*sphere_murdaycotts(rs, 3, b, big_delta, small_delta) + (1-fs_tilde)*smex_signal(tex, Di, De, f_tilde, b, big_delta, small_delta)
 
 
 def sandix_signal_from_vector(param, b, big_delta, small_delta):
@@ -55,7 +55,7 @@ def sandix_signal_from_vector(param, b, big_delta, small_delta):
     return sandix_signal(param[0], param[1], param[2], param[3], param[4], param[5], b, big_delta, small_delta)
 
 #######################################################################################################################
-# Nexi Sphere jacobian
+# SANDIX jacobian
 #######################################################################################################################
 
 
@@ -89,7 +89,7 @@ def sandix_jacobian_from_vector(param, b, big_delta, small_delta):
 
 
 #######################################################################################################################
-# Nexi Sphere signal & jacobian concatenated
+# SANDIX signal & jacobian concatenated
 #######################################################################################################################
 
 
@@ -125,7 +125,7 @@ def sandix_concatenated_from_vector(param, b, big_delta, small_delta):
 
 
 #######################################################################################################################
-# Optimized Nexi Sphere for computation of MSE jacobian
+# Optimized SANDIX for computation of MSE jacobian
 #######################################################################################################################
 
 
