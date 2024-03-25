@@ -10,7 +10,8 @@ from .nls.nls import nls_parallel
 from .nls.gridsearch import find_nls_initialization
 
 
-def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_delta, out_path, mask_path=None, fixed_parameters=None, debug=False):
+def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_delta, out_path, 
+                             mask_path=None, fixed_parameters=None, n_cores=-1, debug=False):
     """
     Estimate the noiseless NEXI model parameters for a given set of preprocessed signals,
     providing the b-values and diffusion times. A mask is optional but highly recommended.
@@ -34,6 +35,8 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
         Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. 
         The tuple must have the same length as the number of parameters of the model (without noise correction).
         Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
+    n_cores : int, optional
+        Number of cores to use for the parallelization. If -1, all available cores are used. The default is -1.
     debug : bool, optional
         Debug mode. The default is False.
 
@@ -73,6 +76,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
     grid_search_nb_points = microstruct_model.grid_search_nb_points
     max_nls_verif = 1
 
+    # Replace the NLS parameter limits for the fixed parameters if provided
     if fixed_parameters is not None:
         # Assert that the number of parameters in the model and the number of fixed parameters are the same
         assert microstruct_model.n_params == len(fixed_parameters), "The number of parameters in the model and the length of fixed_parameters are different. Set the moving parameters in the fixed_parameters tuple to None."
@@ -99,6 +103,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
         nls_param_lim=nls_param_lim,
         max_nls_verif=max_nls_verif,
         initial_gt=initial_gt,
+        n_cores=n_cores
     )
 
     # Save the NEXI model parameters
