@@ -12,7 +12,7 @@ class Sandix(MicroStructModel):
     n_params = 6
     param_names = ["t_ex", "Di", "De", "f", "rs", "fs"]
     classic_limits = np.array([[1, 150], [0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5]])
-    grid_search_nb_points = [12, 8, 5, 5, 5, 5]
+    grid_search_nb_points = [7, 5, 5, 5, 5, 5]  # Optimal would be [12, 8, 5, 5, 5, 5], but it will depends on how much time your machine takes
     has_rician_mean_correction = False
 
     def __init__(self, param_lim=classic_limits, invert_tex=False):

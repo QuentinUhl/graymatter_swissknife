@@ -12,7 +12,7 @@ class GemRiceMean(MicroStructModel):
     n_params = 8
     param_names = ["t_exs", "t_exd", "Dd", "De", "fn", "radius", "fsn", "sigma"]
     classic_limits = np.array([[1, 150], [1, 150], [0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5], [0, 100]])
-    grid_search_nb_points = [12, 8, 5, 5, 5, 5, 5]
+    grid_search_nb_points = [5, 5, 5, 5, 5, 5, 5]  # Optimal would be [12, 8, 5, 5, 5, 5, 5], but it will depends on how much time your machine takes
     has_rician_mean_correction = True
     non_corrected_model = Gem()
 
