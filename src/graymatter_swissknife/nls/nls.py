@@ -103,8 +103,9 @@ def touch_border(x_sol, nls_param_lim, n_param):
     :return: True if the NLS algorithm has touched the border of the parameter space, False otherwise
     """
     for ind_p in range(n_param):
-        if x_sol[ind_p] == nls_param_lim[ind_p][0] or x_sol[ind_p] == nls_param_lim[ind_p][1]:
-            return True
+        if nls_param_lim[ind_p][0] != nls_param_lim[ind_p][1]:
+            if x_sol[ind_p] == nls_param_lim[ind_p][0] or x_sol[ind_p] == nls_param_lim[ind_p][1]:
+                return True
     return False
 
 

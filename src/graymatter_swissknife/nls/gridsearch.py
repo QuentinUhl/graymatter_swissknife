@@ -40,10 +40,14 @@ def find_nls_initialization(
     )
 
     # Generate the parameter grid combinations (avoiding the limits of the bounds)
-    param_grid = [
-        np.linspace(grid_search_param_lim[p][0], grid_search_param_lim[p][1], grid_search_nb_points[p] + 2)[1:-1].tolist()
-        for p in range(n_moving_param)
-    ]
+    param_grid = []
+    for p in range(n_moving_param):
+        if grid_search_param_lim[p][0] == grid_search_param_lim[p][1]:
+            param_grid.append([grid_search_param_lim[p][0]])
+        else:
+            param_grid.append(
+                np.linspace(grid_search_param_lim[p][0], grid_search_param_lim[p][1], grid_search_nb_points[p] + 2)[1:-1].tolist()
+            )
     grid_combinations = list(itertools.product(*param_grid))
     parameters = np.array(grid_combinations)
 
