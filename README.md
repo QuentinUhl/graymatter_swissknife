@@ -30,7 +30,7 @@ pip install graymatter_swissknife
 To estimate any gray matter model parameters with Nonlinear Least Squares using the graymatter_swissknife package, you can use the estimate_model function. This function takes several parameters that you need to provide in order to perform the estimation accurately.
 
 ```
-estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path, out_path)
+estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_noisemap_path, out_path)
 ```
 
 `model_name`: Choose your gray matter model between `'Nexi'` (or `'Nexi_Narrow_Pulses_Approximation'`), `'Smex'` (or `'Nexi_Wide_Pulses'`), `'Sandi'`, `'Sandix'` and `'Gem'`.
@@ -39,11 +39,23 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, lowb_noisemap_path, ou
 
 `bvals_path`: The path to the b-values file corresponding to the DWI data, in ms/µm². B-values specify the strength and timing of diffusion sensitization gradients for each volume in the DWI data.
 
-`td_path`: The path to the diffusion time (td) file, also known as Δ, in ms. This file provides information about the diffusion time for each volume in the DWI data. The diffusion time is the time between the two gradient pulses. 
+`td_path`: The path to the diffusion time (td) / Δ file, in ms. This file provides information about Δ for each volume in the DWI data. Δ is the time at the beginning of the second gradient pulse. 
+
+`small_delta` (float): The value of δ in your protocol, in ms. δ is the duration of a gradient pulse. A future update will allow multiple δ in the protocol.
 
 `lowb_noisemap_path`: The path to the noisemap calculated using only the small b-values (b < 2 ms/µm²) and Marchenko-Pastur principal component analysis (MP-PCA) denoising. This noisemap is used to calculate the signal-to-noise ratio (SNR) of the data.
 
 `out_path`: The folder where the estimated parameters will be saved as output.
+
+**Additional options:**
+
+`mask_path`: The mask path, if the analysis concerns a specific portion of the DWI images. The mask can be in 3 dimensions, or must be able to be squeezed in only 3 dimensions.
+
+`fixed_parameters`: Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. The tuple must have the same length as the number of parameters of the model (without noise correction). Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
+
+`n_cores`: Number of cores to use for the parallelization. If -1, all available cores are used. The default is -1.
+
+`debug`: Debug mode. The default is False.
 
 ### Gray Matter microstructure models description from the Generalized Exchange Model
 
