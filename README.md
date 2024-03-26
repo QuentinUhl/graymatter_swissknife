@@ -8,8 +8,8 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 -----
-<div class="container" style="display: flex;">
-    <div style="flex: 1; text-align: left;">
+<div class="container" style="display: flex; align-items: center; height: 100%;">
+    <div style="width: 50%; text-align: left;">
         <strong>Table of Contents</strong>
         <ul>
             <li><a href="#installation">Installation</a></li>
@@ -19,10 +19,11 @@
             <li><a href="#license">License</a></li>
         </ul>
     </div>
-    <div style="flex: 2; display: flex; justify-content: center; align-items: center;">
-        <img src="images/gm_swissknife_square_low_res.png" alt="GM SK logo" width="250" role="img">
+    <div style="width: 50%; display: flex; justify-content: center;">
+        <img src="images/gm_swissknife_square_low_res.png" alt="GM SK logo" width="350" role="img">
     </div>
 </div>
+
 
 
 ## Installation
