@@ -9,10 +9,13 @@ def save_estimations_as_nifti(estimations, model, powder_average_path, mask_path
     powder_average = nib.load(powder_average_path).get_fdata()
     if powder_average.ndim == 4:
         powder_average = np.sum(powder_average, axis=-1)
-
+    
     if mask_path is not None:
+        # threshold for the mask (coulb also be 0.33)
+        # If you touch it, please change it also in powderaverage.py
+        mask_threshold = 0 
         mask = nib.load(mask_path).get_fdata()
-        mask = mask.astype(bool)
+        mask = (mask > mask_threshold).astype(bool)
         mask = mask & (~np.isnan(powder_average))
     else:
         mask = ~np.isnan(powder_average)

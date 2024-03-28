@@ -47,7 +47,10 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
         mask = np.squeeze(nib.load(mask_path).get_fdata())
     else:
         mask = np.ones(dwi_image.shape[:-1])
-    bool_mask = np.copy(mask) > 0.33
+    # threshold for the mask (coulb also be 0.33)
+    # If you touch it, please change it also in save_parameters.py
+    mask_threshold = 0 
+    bool_mask = np.copy(mask) > mask_threshold 
     # Initialize powder average image, b-values and diffusion times
     pa_image = []
     pa_b = []
@@ -64,6 +67,8 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
             b0_image = np.mean(dwi_image[..., b0_selection], axis=-1)
         else:
             b0_image = dwi_image[..., b0_selection][..., 0]
+        # Convert eventual negative values
+        b0_image = np.abs(b0_image)
         # Update mask with the positions in the b0 images where the signal is equal to zero (to avoid div. by 0)
         bool_mask = bool_mask & (b0_image != 0)
         # Convert the boolean mask into a 1.0/nan mask to be easily multiplied
@@ -75,6 +80,9 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
         pa_td.append(td)
         # Sort the unique (non-zero) b-values per diffusion time
         nonzero_b = np.sort(np.unique(bvalues[tdvalues == td]))[1:]
+        # Generate a np.nan mask for the normalization to avoid division by 0
+        nan_mask = np.copy(bool_mask).astype(float)
+        nan_mask[bool_mask == 0] = np.nan
         for b in nonzero_b:
             selection = (tdvalues == td) & (bvalues == b)
             norm_image = np.mean(dwi_image[..., selection], axis=-1)
@@ -84,15 +92,17 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
             pa_image.append(norm_image)
             pa_b.append(b)
             pa_td.append(td)
-            # Update mask with the values where the diffusion-weighted signal was higher than the b0 image
-            bool_mask = bool_mask & (norm_image < 1)
-            nan_mask = np.copy(bool_mask).astype(float)
-            nan_mask[bool_mask == 0] = np.nan
+            # Update mask with the values where the diffusion-weighted signal were lower than the b0 image
+            # bool_mask = bool_mask & (norm_image < 1)
+            # nan_mask = np.copy(bool_mask).astype(float)
+            # nan_mask[bool_mask == 0] = np.nan
     # Convert the list of powder averaged images into numpy array
     pa_image = np.stack(pa_image, axis=-1)
+    # Make sure the mask is the intersection between the original mask 
+    # and where the powder averaged image is not NaN
+    bool_mask = (mask > mask_threshold) & (~np.isnan(np.sum(pa_image, axis=-1)))
     # Reapply the last updated mask to every volume
-    for volume in range(pa_image.shape[-1]):
-        pa_image[..., volume] = nan_mask * pa_image[..., volume]
+    pa_image = nan_mask[..., None] * pa_image
     # Get rid of extreme values
     pa_image = np.clip(pa_image, 0, 1)
 
