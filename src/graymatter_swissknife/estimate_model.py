@@ -11,7 +11,8 @@ from .nls.gridsearch import find_nls_initialization
 
 
 def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_noisemap_path, out_path, 
-                   mask_path=None, fixed_parameters=None, n_cores=-1 ,debug=False):
+                   mask_path=None, fixed_parameters=None, adjust_parameter_limits=None, 
+                   n_cores=-1 ,debug=False):
     """
     Estimate the model parameters for a given set of preprocessed signals,
     providing the b-values, diffusion times and low b-values noise map. A mask is optional but highly recommended.
@@ -35,8 +36,12 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         Path to the mask file. The default is None.
     fixed_parameters : tuple
         Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. 
-        The tuple must have the same length as the number of parameters of the model (without noise correction).
+        The tuple must have the same length as the number of parameters of the model (with or without noise correction).
         Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
+    adjust_parameter_limits : tuple
+        Allows to adjust the parameter limits for the Non-Linear Least Squares if not set to None. Tuple of adjusted parameter limits for the model.
+        The tuple must have the same length as the number of parameters of the model (with or without noise correction).
+        Example of use: Adjust the parameter limits for Di to [1.5, 2.5]µm²/ms and De to [0.5, 1.5]µm²/ms in the NEXI model by specifying adjust_parameter_limits=(None, [1.5, 2.5], [0.5, 1.5], None)
     n_cores : int, optional
         Number of cores to use for the parallelization. If -1, all available cores are used. The default is -1.
     debug : bool, optional
@@ -85,6 +90,17 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
     grid_search_nb_points = microstruct_model.grid_search_nb_points
     max_nls_verif = 1
 
+    # Replace the NLS parameter limits if adjust_parameter_limits if provided
+    if adjust_parameter_limits is not None:
+        # Assert that the number of parameters in the model and the number of fixed parameters are the same
+        assert (len(adjust_parameter_limits) == microstruct_model.n_params - 1) or (len(adjusted_param_limit) == microstruct_model.n_params), "The number of parameters in the model and the length of adjusted_param_limit are different. Set the unchanged parameter limits in the adjusted_param_limit tuple to None."
+
+        # Replace the NLS parameter limits for the fixed parameters
+        for i, (adjusted_param_limit) in enumerate(adjust_parameter_limits):
+            if adjusted_param_limit is not None:
+                assert len(adjusted_param_limit) == 2, "The adjusted parameter limits must be a tuple of two values."
+                nls_param_lim[i] = [adjusted_param_limit[0], adjusted_param_limit[1]]
+    
     # Replace the NLS parameter limits for the fixed parameters if provided
     if fixed_parameters is not None:
         # Assert that the number of parameters in the model and the number of fixed parameters are the same
@@ -143,17 +159,13 @@ if __name__ == '__main__':
     # Set to None if not provided
     parser.add_argument('--small_delta', help='small delta (in ms)', required=False, type=float, default=None)
     parser.add_argument('--mask_path', help='path to the mask', required=False, default=None)
+    parser.add_argument('--fixed_parameters', help='tuple of fixed parameters', required=False, default=None)
+    parser.add_argument('--adjust_parameter_limits', help='tuple of adjusted parameter limits', required=False, default=None)
     parser.add_argument('--debug', help='debug mode', required=False, action='store_true')
     args = parser.parse_args()
 
     # estimate_nexi(**vars(parser.parse_args()))
-    estimate_model(
-        args.dwi_path,
-        args.bvals_path,
-        args.td_path,
-        args.lowb_noisemap_path,
-        args.out_path,
-        args.small_delta,
-        args.mask_path,
-        args.debug,
-    )
+    estimate_model(model_name=args.model_name, dwi_path=args.dwi_path, bvals_path=args.bvals_path, td_path=args.td_path, 
+                   small_delta=args.small_delta, lowb_noisemap_path=args.lowb_noisemap_path, out_path=args.out_path, 
+                   mask_path=args.mask_path, fixed_parameters=args.fixed_parameters, adjust_parameter_limits=args.adjust_parameter_limits, 
+                   debug=args.debug)

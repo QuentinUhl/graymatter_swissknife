@@ -57,7 +57,9 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_nois
 
 `mask_path`: The mask path, if the analysis concerns a specific portion of the DWI images. The mask can be in 3 dimensions, or must be able to be squeezed in only 3 dimensions.
 
-`fixed_parameters`: Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. The tuple must have the same length as the number of parameters of the model (without noise correction). Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
+`fixed_parameters`: Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. The tuple must have the same length as the number of parameters of the model (with or without noise correction). Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
+
+`adjust_parameter_limits`: Allows to redefine some parameter limits of the model if not set to None. Tuple of adjusted parameter limits for the model. The tuple must have the same length as the number of parameters of the model (with or without noise correction). This will have no effect on the fixed parameters (if set in fixed_parameters). Example of use: Fix Di limits to (1.5-2.5)µm²/ms and De to (0.5-1.5)µm²/ms in the NEXI model by specifying fixed_parameters=(None, (1.5, 2.5) , (0.5, 1.5), None)
 
 `n_cores`: Number of cores to use for the parallelization. If -1, all available cores are used. The default is -1.
 
