@@ -1,4 +1,4 @@
-# Gray Matter Microstructure models estimator for gray matter diffusion MRI
+# Gray Matter Microstructure models estimator for diffusion MRI
 
 [![PyPI - Version](https://img.shields.io/pypi/v/graymatter_swissknife.svg)](https://pypi.org/project/graymatter_swissknife)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/graymatter_swissknife)](#)
