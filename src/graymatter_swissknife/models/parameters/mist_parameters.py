@@ -14,17 +14,9 @@ class MIcroSTructureParameters(ABC):
         # parameters
         self.param = param
 
-    def initialize_fixed_parameters(self, n_set, ground_truth_params):
-        # parameters
-        param = np.empty([n_set, self.n_params])
-        for param_index in range(self.n_params):
-            param[:, param_index] = np.ones(n_set) * ground_truth_params[param_index]
-        self.param = param
-        return param
-
     def initialize_random_parameters(self, n_set, microstruct_model):
         # parameters
-        param = np.empty([n_set, self.n_params])
+        param = np.zeros([n_set, self.n_params])
         for param_index in range(microstruct_model.n_params):
             param[:, param_index] = (
                 np.random.rand(n_set)
@@ -33,9 +25,17 @@ class MIcroSTructureParameters(ABC):
             )
         if microstruct_model.constraints is not None:
             for constr in microstruct_model.constraints:
+                normalized_param = constr(normalized_param)
                 param = constr(param)
+        # Compute the normalized parameters
+        normalized_param = np.zeros([n_set, self.n_params])
+        for param_index in range(microstruct_model.n_params):
+            if microstruct_model.param_lim[param_index][1] != microstruct_model.param_lim[param_index][0]:
+                normalized_param[:, param_index] = (
+                    param[:, param_index] - microstruct_model.param_lim[param_index][0]
+                ) / (microstruct_model.param_lim[param_index][1] - microstruct_model.param_lim[param_index][0])
         self.param = param
-        return param
+        return param, normalized_param
 
 
 class MIcroSTructureParametersException(Exception):

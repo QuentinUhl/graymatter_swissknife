@@ -49,7 +49,9 @@ dependencies = [
   "joblib",
   "scipy",
   "coverage[toml]>=6.5",
-  "pytest"
+  "pytest",
+  "xgboost",
+  "scikit-learn"
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

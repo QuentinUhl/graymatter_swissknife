@@ -65,6 +65,16 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_nois
 
 `debug`: Debug mode. The default is False.
 
+## Fast XGBoost Estimation:
+
+The Non-Linear Least Squares method is preferred for the most accurate estimates. However, this method takes a long time to fit. To analyze large cohorts, we could recommend training an XGBoost model to learn the model on the given parameter limits, then applying this trained model to the entire cohort. To achieve this, we use the following arguments:
+
+`optimization_method`: To use XGBoost, set this setting to `'xgboost'`. The default is `'nls'`.
+
+`xgboost_model_path`: If the model is not yet trained, this setting indicates where the model and its weights will be saved. If the model is already trained, then this setting must indicate where it will be saved. The default is None. If `optimization_method` is set to `'xgboost'`, this setting will be required.
+
+`retrain_xgboost` (Optional): Boolean to indicate if you wish to overwrite the model already trained and saved at the address indicated in xgboost_model_path. The default and recommended setting is False. The safest way is to delete the saved file yourself.
+
 ### Gray Matter microstructure models description from the Generalized Exchange Model
 
 ![](images/GM_models_from_GEM.png)

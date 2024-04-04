@@ -8,10 +8,13 @@ from .models.parameters.acq_parameters import AcquisitionParameters
 from .models.parameters.save_parameters import save_estimations_as_nifti
 from .nls.nls import nls_parallel
 from .nls.gridsearch import find_nls_initialization
+from .xgboost.define_xgboost_model import define_xgboost_model
+from .xgboost.apply_xgboost_model import apply_xgboost_model
 
 
 def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_noisemap_path, out_path, 
                    mask_path=None, fixed_parameters=None, adjust_parameter_limits=None, 
+                   optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
                    n_cores=-1 ,debug=False):
     """
     Estimate the model parameters for a given set of preprocessed signals,
@@ -34,14 +37,23 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         Path to the output directory. If the directory does not exist, it will be created.
     mask_path : str, optional
         Path to the mask file. The default is None.
-    fixed_parameters : tuple
+    fixed_parameters : tuple, optional
         Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. 
         The tuple must have the same length as the number of parameters of the model (with or without noise correction).
         Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
-    adjust_parameter_limits : tuple
+    adjust_parameter_limits : tuple, optional
         Allows to adjust the parameter limits for the Non-Linear Least Squares if not set to None. Tuple of adjusted parameter limits for the model.
         The tuple must have the same length as the number of parameters of the model (with or without noise correction).
         Example of use: Adjust the parameter limits for Di to [1.5, 2.5]µm²/ms and De to [0.5, 1.5]µm²/ms in the NEXI model by specifying adjust_parameter_limits=(None, [1.5, 2.5], [0.5, 1.5], None)
+    optimization_method : string, optional
+        Optimization method to use. 'NLS' for Non-Linear Least Squares. 'XGBoost' for XGBoost (Machine Learning). 
+        The default is 'NLS'.
+    xgboost_model_path : string, optional
+        Path to your future or pretrained XGBoost model file. Allowed file extensions are json or ubj.
+        Example: 'yourfolder/cohort_microstructuremodel.ubj'. 
+        The default is None.
+    retrain_xgboost : bool, optional
+        If True, the XGBoost model will be retrained. If False, the XGBoost model will be loaded from the xgboost_model_path.
     n_cores : int, optional
         Number of cores to use for the parallelization. If -1, all available cores are used. The default is -1.
     debug : bool, optional
@@ -86,7 +98,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
 
     # Define the parameter limits for the Non-Linear Least Squares
     microstruct_model = find_model(model_name + 'RiceMean')
-    nls_param_lim = microstruct_model.param_lim
+    parameter_limits = microstruct_model.param_lim
     grid_search_nb_points = microstruct_model.grid_search_nb_points
     max_nls_verif = 1
 
@@ -99,7 +111,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         for i, (adjusted_param_limit) in enumerate(adjust_parameter_limits):
             if adjusted_param_limit is not None:
                 assert len(adjusted_param_limit) == 2, "The adjusted parameter limits must be a tuple of two values."
-                nls_param_lim[i] = [adjusted_param_limit[0], adjusted_param_limit[1]]
+                parameter_limits[i] = [adjusted_param_limit[0], adjusted_param_limit[1]]
     
     # Replace the NLS parameter limits for the fixed parameters if provided
     if fixed_parameters is not None:
@@ -109,28 +121,56 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         # Replace the NLS parameter limits for the fixed parameters
         for i, fixed_param in enumerate(fixed_parameters):
             if fixed_param is not None:
-                nls_param_lim[i] = [fixed_param, fixed_param]
+                parameter_limits[i] = [fixed_param, fixed_param]
+    
+    # Update the parameter limits in the microstructure model
+    microstruct_model.param_lim = parameter_limits
+    
+    # Check the optimization method
+    optimization_method = optimization_method.lower()
+    assert optimization_method in ['nls', 'xgboost'], "The optimization method must be 'NLS' or 'XGBoost'."
 
-    # Compute the initial Ground Truth to start the NLS with if requested
-    initial_grid_search = True
-    initial_gt = None
-    if initial_grid_search:
-        initial_gt = find_nls_initialization(
-            signal, sigma, voxel_nb, acq_param, microstruct_model, nls_param_lim, grid_search_nb_points, debug=debug
+    if optimization_method == 'nls':
+
+        # Compute the initial Ground Truth to start the NLS with if requested
+        initial_grid_search = True
+        initial_gt = None
+        if initial_grid_search:
+            initial_gt = find_nls_initialization(
+                signal, sigma, voxel_nb, acq_param, microstruct_model, parameter_limits, grid_search_nb_points, debug=debug
+            )
+
+        # Compute the NLS estimations
+        estimations, estimation_init = nls_parallel(
+            signal,
+            voxel_nb,
+            microstruct_model,
+            acq_param,
+            nls_param_lim=parameter_limits,
+            max_nls_verif=max_nls_verif,
+            initial_gt=initial_gt,
+            n_cores=n_cores
         )
 
-    # Compute the NLS estimations
-    estimations, estimation_init = nls_parallel(
-        signal,
-        voxel_nb,
-        microstruct_model,
-        acq_param,
-        nls_param_lim=nls_param_lim,
-        max_nls_verif=max_nls_verif,
-        initial_gt=initial_gt,
-        n_cores=n_cores
-    )
+    elif optimization_method == 'xgboost':
 
+        # No initialization in XGBoost
+        estimation_init = None
+
+        # Check if the XGBoost model path is provided
+        assert xgboost_model_path is not None, "The XGBoost model path must be provided, either to save or load the model."
+
+        # Define the XGBoost model from a file or generate and train it
+        n_training_samples = 1000000
+        xgboost_model = define_xgboost_model(xgboost_model_path, retrain_xgboost, 
+                                             microstruct_model, acq_param, n_training_samples, sigma, n_cores)
+        
+        # Apply the XGBoost model
+        estimations = apply_xgboost_model(xgboost_model, signal, microstruct_model)
+    
+    else:
+        raise ValueError("The optimization method must be 'NLS' or 'XGBoost'.")
+    
     # Save the model parameters
     if debug:
         np.savez_compressed(
