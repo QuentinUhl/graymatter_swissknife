@@ -13,10 +13,9 @@ class Smex(MicroStructModel):
     grid_search_nb_points = [15, 12, 8, 8]
     has_rician_mean_correction = False
 
-    def __init__(self, param_lim=classic_limits, invert_tex=False):
+    def __init__(self, param_lim=classic_limits):
         super().__init__(name='SMEX')
         self.param_lim = param_lim
-        self.invert_tex = invert_tex
         self.constraints = [self.constr_on_diffusivities]
 
     @staticmethod

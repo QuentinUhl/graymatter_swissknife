@@ -17,10 +17,9 @@ class SandixRiceMean(MicroStructModel):
     has_rician_mean_correction = True
     non_corrected_model = Sandix()
 
-    def __init__(self, param_lim=classic_limits, invert_tex=False):
+    def __init__(self, param_lim=classic_limits):
         super().__init__(name='SANDIX_Rice_Mean')
         self.param_lim = param_lim
-        self.invert_tex = False
         self.constraints = [self.constr_on_diffusivities]
 
     @staticmethod

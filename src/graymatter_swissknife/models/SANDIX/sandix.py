@@ -15,10 +15,9 @@ class Sandix(MicroStructModel):
     grid_search_nb_points = [7, 5, 5, 5, 5, 5]  # Optimal would be [12, 8, 5, 5, 5, 5], but it will depends on how much time your machine takes
     has_rician_mean_correction = False
 
-    def __init__(self, param_lim=classic_limits, invert_tex=False):
+    def __init__(self, param_lim=classic_limits):
         super().__init__(name='SANDIX')
         self.param_lim = param_lim
-        self.invert_tex = invert_tex
         self.constraints = [self.constr_on_diffusivities]
 
     @staticmethod

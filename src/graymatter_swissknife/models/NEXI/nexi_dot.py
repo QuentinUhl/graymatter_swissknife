@@ -14,10 +14,9 @@ class NexiDot(MicroStructModel):
     grid_search_nb_points = [15, 12, 8, 8, 6]
     has_rician_mean_correction = False
 
-    def __init__(self, param_lim=classic_limits, invert_tex=False):
+    def __init__(self, param_lim=classic_limits):
         super().__init__(name='NEXI_dot')
         self.param_lim = param_lim
-        self.invert_tex = invert_tex
         self.constraints = [self.constr_on_diffusivities]
 
     @staticmethod
