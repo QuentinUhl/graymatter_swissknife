@@ -20,6 +20,11 @@ def generate_dataset(microstruct_model, acq_param, n_samples, sigma=None, n_core
     synthetic_param = MIcroSTructureParameters(microstruct_model, None)
     synthetic_param, normalized_synthetic_param = synthetic_param.initialize_random_parameters(n_samples, microstruct_model)
 
+    # Remove the last parameter (sigma) from synthetic_param and normalized_synthetic_param if the model has a Rician mean correction
+    if microstruct_model.has_rician_mean_correction:
+        synthetic_param = synthetic_param[:, :-1]
+        normalized_synthetic_param = normalized_synthetic_param[:, :-1]
+
     # Generate the synthetic signals from the parameters and the microstructure model   
     if microstruct_model.has_rician_mean_correction:
         assert sigma is not None, "The standard deviation of the Rician noise must be provided"

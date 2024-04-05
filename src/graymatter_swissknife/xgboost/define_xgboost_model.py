@@ -41,7 +41,7 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
         synthetic_signal, _, normalized_param = generate_dataset(microstruct_model, acq_param, n_samples, sigma, n_cores)
 
         # Split the dataset into train, validation and test sets
-        X_train, X_test, y_train, y_test = train_test_split(normalized_param, synthetic_signal, test_size=0.2, random_state=11)
+        X_train, X_test, y_train, y_test = train_test_split(synthetic_signal, normalized_param, test_size=0.2, random_state=11)
         X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=12)
 
         # Train the XGBoost model
