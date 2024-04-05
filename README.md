@@ -26,6 +26,7 @@
 ## Installation
 
 ```console
+pip install numpy nibabel tqdm joblib scipy xgboost scikit-learn
 pip install graymatter_swissknife
 ```
 
@@ -36,6 +37,7 @@ pip install graymatter_swissknife
 To estimate any gray matter model parameters with Nonlinear Least Squares using the graymatter_swissknife package, you can use the estimate_model function. This function takes several parameters that you need to provide in order to perform the estimation accurately.
 
 ```
+from graymatter_swissknife import estimate_model
 estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_noisemap_path, out_path)
 ```
 
@@ -55,7 +57,7 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_nois
 
 **Additional options:**
 
-`mask_path` (Recommended): The mask path, if the analysis concerns a specific portion of the DWI images. The mask can be in 3 dimensions, or must be able to be squeezed in only 3 dimensions.
+`mask_path` (**Recommended**): The mask path, if the analysis concerns a specific portion of the DWI images. The mask can be in 3 dimensions, or must be able to be squeezed in only 3 dimensions.
 
 `fixed_parameters` (Optional): Allows to fix some parameters of the model if not set to None. Tuple of fixed parameters for the model. The tuple must have the same length as the number of parameters of the model (with or without noise correction). Example of use: Fix Di to 2.0µm²/ms and De to 1.0µm²/ms in the NEXI model by specifying fixed_parameters=(None, 2.0 , 1.0, None)
 
@@ -65,13 +67,13 @@ estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_nois
 
 `debug`: Debug mode. The default is False.
 
-## Fast XGBoost Estimation:
+### Fast XGBoost Estimation (Artificial Intelligence)
 
-The Non-Linear Least Squares method is preferred for the most accurate estimates. However, this method takes a long time to fit. To analyze large cohorts, we could recommend training an XGBoost model to learn the model on the given parameter limits, then applying this trained model to the entire cohort. To achieve this, we use the following arguments:
+The Non-Linear Least Squares method is preferred for the most accurate estimates. However, this method takes a long time to fit. For the analysis of extensive cohorts, we propose employing an XGBoost model to learn the microstructure model on the given parameter limits, then applying this trained XGBoost model to the entire cohort. For example, employing this approach enables the execution of a NEXI analysis on an entire cohort within a timeframe of less than **10 minutes**, provided that the scan parameters remain consistent across the cohort. To achieve this, we use the following arguments:
 
 `optimization_method`: To use XGBoost, set this setting to `'xgboost'`. The default is `'nls'`.
 
-`xgboost_model_path`: If the model is not yet trained, this setting indicates where the model and its weights will be saved. If the model is already trained, then this setting must indicate where it will be saved. The default is None. If `optimization_method` is set to `'xgboost'`, this setting will be required.
+`xgboost_model_path`: If the model is not yet trained, this setting indicates where the model and its weights will be saved. If the model is already trained, then this setting must indicate where it is saved. The default is None. If `optimization_method` is set to `'xgboost'`, this setting will be required.
 
 `retrain_xgboost` (Optional): Boolean to indicate if you wish to overwrite the model already trained and saved at the address indicated in xgboost_model_path. The default and recommended setting is False. The safest way is to delete the saved file yourself.
 
