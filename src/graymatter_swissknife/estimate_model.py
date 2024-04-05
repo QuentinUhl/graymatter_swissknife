@@ -180,7 +180,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         )
 
     # Save the model parameters as nifti
-    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path)
+    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path, optimization_method)
 
 
 if __name__ == '__main__':

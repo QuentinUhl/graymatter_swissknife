@@ -3,7 +3,7 @@ import numpy as np
 import nibabel as nib
 
 
-def save_estimations_as_nifti(estimations, model, powder_average_path, mask_path, out_path):
+def save_estimations_as_nifti(estimations, model, powder_average_path, mask_path, out_path, optimization_method):
     aff, hdr = nib.load(powder_average_path).affine, nib.load(powder_average_path).header
 
     powder_average = nib.load(powder_average_path).get_fdata()
@@ -26,5 +26,10 @@ def save_estimations_as_nifti(estimations, model, powder_average_path, mask_path
         param_map = np.zeros(param_map_shape)
         param_map[mask] = estimations[:, i]
         param_map_nifti = nib.Nifti1Image(param_map, aff, hdr)
-        nib.save(param_map_nifti, f'{out_path}/{model.name.lower()}_{param_name.lower()}.nii.gz')
-        logging.info(f'{model.name.lower()}_{param_name.lower()}.nii.gz saved in {out_path}')
+        if optimization_method == 'nls':
+            nib.save(param_map_nifti, f'{out_path}/{model.name.lower()}_{param_name.lower()}.nii.gz')
+            logging.info(f'{model.name.lower()}_{param_name.lower()}.nii.gz saved in {out_path}')
+        else:
+            nib.save(param_map_nifti, f'{out_path}/{optimization_method}_{model.name.lower()}_{param_name.lower()}.nii.gz')
+            logging.info(f'{optimization_method}_{model.name.lower()}_{param_name.lower()}.nii.gz saved in {out_path}')
+

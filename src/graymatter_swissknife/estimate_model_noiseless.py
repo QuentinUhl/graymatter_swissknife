@@ -171,7 +171,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
         )
 
     # Save the NEXI model parameters as nifti
-    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path)
+    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path, optimization_method)
 
 
 if __name__ == '__main__':
