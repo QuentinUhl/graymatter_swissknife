@@ -22,6 +22,9 @@ def save_estimations_as_nifti(estimations, model, powder_average_path, mask_path
     param_map_shape = mask.shape
 
     param_names = model.param_names
+    # Remove the last parameter (sigma) from the parameter names if the model has a Rician mean correction
+    if model.has_rician_mean_correction:
+        param_names = param_names[:-1]
     for i, param_name in enumerate(param_names):
         param_map = np.zeros(param_map_shape)
         param_map[mask] = estimations[:, i]
