@@ -24,14 +24,15 @@ def generate_dataset(microstruct_model, acq_param, n_samples, sigma=None, n_core
     if microstruct_model.has_rician_mean_correction:
         assert sigma is not None, "The standard deviation of the Rician noise must be provided"
         non_corrected_model = microstruct_model.non_corrected_model
-        logging.info(f"Generating {non_corrected_model.name} signal dictionary")
+        logging.info(f"Generating {non_corrected_model.name} train and test datasets")
         synthetic_signal = np.array(
             Parallel(n_jobs=n_cores)(
                 delayed(non_corrected_model.get_signal)(params, acq_param) for params in tqdm(synthetic_param)
             )
         )
         # Select random sigma values n_samples times with replacement from the given sigma values
-        random_sigma = np.random.choice(sigma, n_samples, replace=True)
+        non_nan_sigma = sigma[~np.isnan(sigma)].flatten()
+        random_sigma = np.random.choice(non_nan_sigma, n_samples, replace=True)
         # Add Rician noise to the synthetic signals
         real_part = synthetic_signal + np.random.randn(synthetic_signal.shape[0], synthetic_signal.shape[1]) * random_sigma[:, None]
         imag_part = np.random.randn(synthetic_signal.shape[0], synthetic_signal.shape[1]) * random_sigma[:, None]
