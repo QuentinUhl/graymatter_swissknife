@@ -25,7 +25,6 @@ class MIcroSTructureParameters(ABC):
             )
         if microstruct_model.constraints is not None:
             for constr in microstruct_model.constraints:
-                normalized_param = constr(normalized_param)
                 param = constr(param)
         # Compute the normalized parameters
         normalized_param = np.zeros([n_set, self.n_params])
