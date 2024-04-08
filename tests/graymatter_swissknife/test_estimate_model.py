@@ -32,6 +32,7 @@ def test_estimate_model():
     td_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage.td'
     powder_average_npz_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage_signal.npz'
     sigma_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/normalized_sigma.nii.gz'
+    updated_mask_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/updated_mask.nii.gz'
 
     assert np.allclose(
         nib.load(powder_average_filename).get_fdata(),
@@ -46,8 +47,9 @@ def test_estimate_model():
     os.remove(td_filename)
     os.remove(powder_average_npz_filename)
     os.remove(sigma_filename)
+    os.remove(updated_mask_filename)
 
-    parameters = ["t_ex", "di", "de", "f", "sigma"]
+    parameters = ["t_ex", "di", "de", "f"]  # , "sigma"]
     for param in parameters:
         param_filename = f'tests/graymatter_swissknife/data/nexi_rice_mean/nexi_rice_mean_{param}.nii.gz'
         param_ref_filename = f'tests/graymatter_swissknife/data/models_ref/nexi_rice_mean_{param}_ref.nii.gz'

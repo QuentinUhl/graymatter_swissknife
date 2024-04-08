@@ -71,7 +71,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         os.makedirs(out_path)
 
     # Convert into powder average
-    powder_average_path, updated_bvals_path, updated_td_path = powder_average(
+    powder_average_path, updated_bvals_path, updated_td_path, updated_mask_path = powder_average(
         dwi_path, bvals_path, td_path, mask_path, out_path, debug=debug
     )
     # NEXI with Rician Mean correction
@@ -80,6 +80,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         powder_average_path,
         updated_bvals_path,
         updated_td_path,
+        updated_mask_path,
         out_path,
         normalized_sigma_filename=normalized_sigma_filename,
         debug=debug,
@@ -180,7 +181,7 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         )
 
     # Save the model parameters as nifti
-    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path, optimization_method)
+    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, updated_mask_path, out_path, optimization_method)
 
 
 if __name__ == '__main__':

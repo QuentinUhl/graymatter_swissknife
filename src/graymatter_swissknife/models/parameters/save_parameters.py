@@ -26,7 +26,7 @@ def save_estimations_as_nifti(estimations, model, powder_average_path, mask_path
     if model.has_rician_mean_correction:
         param_names = param_names[:-1]
     for i, param_name in enumerate(param_names):
-        param_map = np.zeros(param_map_shape)
+        param_map = np.zeros(param_map_shape) * np.nan
         param_map[mask] = estimations[:, i]
         param_map_nifti = nib.Nifti1Image(param_map, aff, hdr)
         if optimization_method == 'nls':

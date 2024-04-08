@@ -23,6 +23,7 @@ def test_estimate_model_noiseless():
     bval_filename = 'tests/graymatter_swissknife/data/nexi/powderaverage.bval'
     td_filename = 'tests/graymatter_swissknife/data/nexi/powderaverage.td'
     powder_average_npz_filename = 'tests/graymatter_swissknife/data/nexi/powderaverage_signal.npz'
+    updated_mask_filename = 'tests/graymatter_swissknife/data/nexi/updated_mask.nii.gz'
 
     assert np.allclose(
         nib.load(powder_average_filename).get_fdata(),
@@ -36,6 +37,7 @@ def test_estimate_model_noiseless():
     os.remove(bval_filename)
     os.remove(td_filename)
     os.remove(powder_average_npz_filename)
+    os.remove(updated_mask_filename)
 
     parameters = ["t_ex", "di", "de", "f"]
     for param in parameters:

@@ -69,12 +69,12 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
         os.makedirs(out_path)
 
     # Convert into powder average
-    powder_average_path, updated_bvals_path, updated_td_path = powder_average(
+    powder_average_path, updated_bvals_path, updated_td_path, updated_mask_path = powder_average(
         dwi_path, bvals_path, td_path, mask_path, out_path, debug=debug
     )
     # Model without Rician Mean correction
     powder_average_signal_npz_filename = save_data_as_npz(
-        powder_average_path, updated_bvals_path, updated_td_path, out_path, debug=debug
+        powder_average_path, updated_bvals_path, updated_td_path, updated_mask_path, out_path, debug=debug
     )
 
     # Load the powder average signal, b-values and diffusion time (acquisition parameters)
@@ -171,7 +171,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
         )
 
     # Save the NEXI model parameters as nifti
-    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, mask_path, out_path, optimization_method)
+    save_estimations_as_nifti(estimations, microstruct_model, powder_average_path, updated_mask_path, out_path, optimization_method)
 
 
 if __name__ == '__main__':
