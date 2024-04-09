@@ -105,11 +105,15 @@ To compute a grey matter mask, one common approach involves using a T1 image, [F
 
 If you use this package in your research, please consider citing the following papers:
 
-## Original gray matter model papers
+### Development of this package
+Quentin Uhl, Tommaso Pavan, Thorsten Feiweier, Gian Franco Piredda, Sune N. Jespersen and Ileana Jelescu, [NEXI for the quantification of human gray matter microstructure on a clinical MRI scanner](https://www.ismrm.org/24m/), Proc. Intl. Soc. Mag. Reson. Med. 2024. 
+Presented at the Annual Meeting of the ISMRM, Singapore, Singapore, p. 0937.
 
 ### Generalized Exchange Model ($GEM$) / Development of this package
 Quentin Uhl, Tommaso Pavan, Inès de Riedmatten, Jasmine Nguyen-Duc, and Ileana Jelescu, [GEM: a unifying model for Gray Matter microstructure](https://www.ismrm.org/24m/), Proc. Intl. Soc. Mag. Reson. Med. 2024. 
 Presented at the Annual Meeting of the ISMRM, Singapore, Singapore, p. 7970.
+
+## Other original gray matter model papers
 
 ### Neurite Exchange Imaging ($NEXI$, or $NEXI_{Narrow Pulse Approximation}$)
 Ileana O. Jelescu, Alexandre de Skowronski, Françoise Geffroy, Marco Palombo, Dmitry S. Novikov, [Neurite Exchange Imaging (NEXI): A minimal model of diffusion in gray matter with inter-compartment water exchange](https://www.sciencedirect.com/science/article/pii/S1053811922003986), NeuroImage, 2022.
