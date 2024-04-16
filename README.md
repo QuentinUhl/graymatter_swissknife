@@ -118,6 +118,8 @@ Presented at the Annual Meeting of the ISMRM, Singapore, Singapore, p. 7970.
 ### Neurite Exchange Imaging ($NEXI$, or $NEXI_{Narrow Pulse Approximation}$)
 Ileana O. Jelescu, Alexandre de Skowronski, Françoise Geffroy, Marco Palombo, Dmitry S. Novikov, [Neurite Exchange Imaging (NEXI): A minimal model of diffusion in gray matter with inter-compartment water exchange](https://www.sciencedirect.com/science/article/pii/S1053811922003986), NeuroImage, 2022.
 
+Quentin Uhl, Tommaso Pavan, Malwina Molendowska, Derek K. Jones, Marco Palombo, Ileana Jelescu, [Quantifying human gray matter microstructure using Neurite Exchange Imaging (NEXI) and 300 mT/m gradients](https://direct.mit.edu/imag/article/doi/10.1162/imag_a_00104/119673/Quantifying-human-gray-matter-microstructure-using), Imaging Neuroscience, 2024
+
 ### Standard Model with Exchange ($SMEX$, or $NEXI_{Wide Pulses}$)
 Jonas L. Olesen, Leif Østergaard, Noam Shemesh, Sune N. Jespersen, [Diffusion time dependence, power-law scaling, and exchange in gray matter](https://doi.org/10.1016/j.neuroimage.2022.118976), NeuroImage, 2022.
 
