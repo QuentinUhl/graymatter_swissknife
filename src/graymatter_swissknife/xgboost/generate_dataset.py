@@ -35,8 +35,11 @@ def generate_dataset(microstruct_model, acq_param, n_samples, sigma=None, n_core
                 delayed(non_corrected_model.get_signal)(params, acq_param) for params in tqdm(synthetic_param)
             )
         )
-        # Select random sigma values n_samples times with replacement from the given sigma values
+        # Select the sigma values that are not NaN
         non_nan_sigma = sigma[~np.isnan(sigma)].flatten()
+        # Select the sigma values that are in the first 75% percentile
+        non_nan_sigma = non_nan_sigma[non_nan_sigma <= np.percentile(non_nan_sigma, 75)]
+        # Select random sigma values n_samples times with replacement from the given sigma values
         random_sigma = np.random.choice(non_nan_sigma, n_samples, replace=True)
         # Add Rician noise to the synthetic signals
         real_part = synthetic_signal + np.random.randn(synthetic_signal.shape[0], synthetic_signal.shape[1]) * random_sigma[:, None]
