@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from .generate_dataset import generate_dataset
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interpn
 
 def define_xgboost_model(xgboost_model_path, retrain_xgboost, 
                          microstruct_model, acq_param, n_training_samples, sigma=None, n_cores=-1):
@@ -85,7 +86,17 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
             n_cols = n_params // n_rows + 1
         for param_index in range(n_params):
             plt.subplot(n_rows, n_cols, param_index + 1)
-            plt.scatter(y_test[:, param_index], y_hat[:, param_index], s=1)
+            # Plot with colors from an histogram 
+            bins = 20
+            x = y_test[:, param_index]
+            y = y_hat[:, param_index]
+            data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
+            z = interpn((0.5 * (x_e[1:] + x_e[:-1]), 0.5 * (y_e[1:] + y_e[:-1])),
+                        data, np.vstack([x, y]).T, method="splinef2d", bounds_error=False)
+            idx = z.argsort()
+            x, y, z = x[idx], y[idx], z[idx]
+            plt.scatter(x, y, c=z, s=0.2)
+            # Plot identity line
             plt.plot([microstruct_model.param_lim[param_index][0], microstruct_model.param_lim[param_index][1]], 
                      [microstruct_model.param_lim[param_index][0], microstruct_model.param_lim[param_index][1]], 
                      color="black", linestyle="--")
