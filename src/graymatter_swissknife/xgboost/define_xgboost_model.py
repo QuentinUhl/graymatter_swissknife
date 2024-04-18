@@ -86,10 +86,12 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
         for param_index in range(n_params):
             plt.subplot(n_rows, n_cols, param_index + 1)
             plt.scatter(y_test[:, param_index], y_hat[:, param_index], s=1)
-            plt.plot([0, 1], [0, 1], color="black", linestyle="--")
-            plt.xlabel(f"GT {microstruct_model.params[param_index]}")
-            plt.ylabel(f"Predicted {microstruct_model.params[param_index]}")
-            plt.title(f"{microstruct_model.params[param_index]}")
+            plt.plot([microstruct_model.param_lim[param_index][0], microstruct_model.param_lim[param_index][1]], 
+                     [microstruct_model.param_lim[param_index][0], microstruct_model.param_lim[param_index][1]], 
+                     color="black", linestyle="--")
+            plt.xlabel(f"Target {microstruct_model.param_names[param_index]}")
+            plt.ylabel(f"Predicted {microstruct_model.param_names[param_index]}")
+            plt.title(f"{microstruct_model.param_names[param_index]}")
         plt.tight_layout()
         plt.savefig(xgboost_test_plot_path)
 
