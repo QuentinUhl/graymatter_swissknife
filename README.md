@@ -26,7 +26,7 @@
 ## Installation
 
 ```console
-pip install numpy nibabel tqdm joblib scipy xgboost scikit-learn
+pip install numpy nibabel tqdm joblib scipy xgboost scikit-learn matplotlib
 pip install graymatter_swissknife
 ```
 

@@ -3,6 +3,7 @@ from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from .generate_dataset import generate_dataset
 import numpy as np
+import matplotlib.pyplot as plt
 
 def define_xgboost_model(xgboost_model_path, retrain_xgboost, 
                          microstruct_model, acq_param, n_training_samples, sigma=None, n_cores=-1):
@@ -60,5 +61,36 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
                 * (microstruct_model.param_lim[param_index][1] - microstruct_model.param_lim[param_index][0])
                 + microstruct_model.param_lim[param_index][0]
             )
+            y_test[:, param_index] = (
+                y_test[:, param_index]
+                * (microstruct_model.param_lim[param_index][1] - microstruct_model.param_lim[param_index][0])
+                + microstruct_model.param_lim[param_index][0]
+            )
         
+        # Save the plot in the same directory as the XGBoost model
+        xgboost_directory = os.path.dirname(xgboost_model_path)
+        # Put "test_" in front of the filename and replace the extension (could be any extension) with ".png"
+        xgboost_model_basename = os.path.basename(xgboost_model_path)
+        # Remove the last extension and remerge everything with the new extension
+        xgboost_test_plot_filename = ".".join(xgboost_model_basename.split(".")[:-1]) + ".png"
+        xgboost_test_plot_path = '/'.join([xgboost_directory, xgboost_test_plot_filename])
+        
+        # Create the scatter plot between the GT y_test and the predicted y_hat
+        plt.figure(figsize=(10, 10))
+        # Divide the plot depending on n_params
+        n_rows = 2
+        if n_params % 2 == 0:
+            n_cols = n_params // n_rows
+        else:
+            n_cols = n_params // n_rows + 1
+        for param_index in range(n_params):
+            plt.subplot(n_rows, n_cols, param_index + 1)
+            plt.scatter(y_test[:, param_index], y_hat[:, param_index], s=1)
+            plt.plot([0, 1], [0, 1], color="black", linestyle="--")
+            plt.xlabel(f"GT {microstruct_model.params[param_index]}")
+            plt.ylabel(f"Predicted {microstruct_model.params[param_index]}")
+            plt.title(f"{microstruct_model.params[param_index]}")
+        plt.tight_layout()
+        plt.savefig(xgboost_test_plot_path)
+
     return xgboost_model
