@@ -80,17 +80,19 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
         plt.figure(figsize=(10, 10))
         # Compute the number of variable parameters (non fixed in param_lim, i.e. that have two different values in their limits)
         n_varying_params = 0
+        varying_params = []
         for param_index in range(n_params):
             if microstruct_model.param_lim[param_index][0] != microstruct_model.param_lim[param_index][1]:
                 n_varying_params += 1
+                varying_params.append(param_index)
         # Divide the plot depending on n_varying_params
         n_rows = 2
         if n_varying_params % 2 == 0:
             n_cols = n_varying_params // n_rows
         else:
             n_cols = n_varying_params // n_rows + 1
-        for param_index in range(n_varying_params):
-            plt.subplot(n_rows, n_cols, param_index + 1)
+        for plot_index, param_index in enumerate(varying_params):
+            plt.subplot(n_rows, n_cols, plot_index + 1)
             # Plot with colors from an histogram 
             bins = 20
             x = y_test[:, param_index]
