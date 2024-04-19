@@ -78,13 +78,18 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
         
         # Create the scatter plot between the GT y_test and the predicted y_hat
         plt.figure(figsize=(10, 10))
-        # Divide the plot depending on n_params
-        n_rows = 2
-        if n_params % 2 == 0:
-            n_cols = n_params // n_rows
-        else:
-            n_cols = n_params // n_rows + 1
+        # Compute the number of variable parameters (non fixed in param_lim, i.e. that have two different values in their limits)
+        n_varying_params = 0
         for param_index in range(n_params):
+            if microstruct_model.param_lim[param_index][0] != microstruct_model.param_lim[param_index][1]:
+                n_varying_params += 1
+        # Divide the plot depending on n_varying_params
+        n_rows = 2
+        if n_varying_params % 2 == 0:
+            n_cols = n_varying_params // n_rows
+        else:
+            n_cols = n_varying_params // n_rows + 1
+        for param_index in range(n_varying_params):
             plt.subplot(n_rows, n_cols, param_index + 1)
             # Plot with colors from an histogram 
             bins = 20
