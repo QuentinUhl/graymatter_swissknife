@@ -25,9 +25,10 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
     
     xgboost_model = XGBRegressor(
                                     tree_method="hist", 
-                                    n_estimators=128,
+                                    n_estimators=512,
+                                    early_stopping_rounds=64,
                                     n_jobs=16,
-                                    max_depth=8,
+                                    max_depth=16,
                                     multi_strategy="one_output_per_tree",
                                     subsample=0.6,
                                     device='gpu'  # Use GPU acceleration
