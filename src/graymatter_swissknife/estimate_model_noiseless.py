@@ -96,13 +96,13 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, td_path, small_de
     # Replace the NLS parameter limits if adjust_parameter_limits is provided
     if adjust_parameter_limits is not None:
         # Assert that the number of parameters in the model and the number of fixed parameters are the same
-        assert (len(adjust_parameter_limits) == microstruct_model.n_params - 1) or (len(adjusted_param_limit) == microstruct_model.n_params), "The number of parameters in the model and the length of adjusted_param_limit are different. Set the unchanged parameter limits in the adjusted_param_limit tuple to None."
+        assert (len(adjust_parameter_limits) == microstruct_model.n_params - 1) or (len(adjust_parameter_limits) == microstruct_model.n_params), "The number of parameters in the model and the length of adjust_parameter_limits are different. Set the unchanged parameter limits in the adjust_parameter_limits tuple to None."
 
         # Replace the NLS parameter limits for the fixed parameters
-        for i, (adjusted_param_limit) in enumerate(adjust_parameter_limits):
-            if adjusted_param_limit is not None:
-                assert len(adjusted_param_limit) == 2, "The adjusted parameter limits must be a tuple of two values."
-                parameter_limits[i] = [adjusted_param_limit[0], adjusted_param_limit[1]]
+        for i, (adjust_parameter_limits) in enumerate(adjust_parameter_limits):
+            if adjust_parameter_limits is not None:
+                assert len(adjust_parameter_limits) == 2, "The adjusted parameter limits must be a tuple of two values."
+                parameter_limits[i] = [adjust_parameter_limits[0], adjust_parameter_limits[1]]
     
     # Replace the NLS parameter limits for the fixed parameters if provided
     if fixed_parameters is not None:
