@@ -138,13 +138,13 @@ nexi_dot_jacobian_from_vector = lambda param, b, t: nexi_dot_jacobian(param[0], 
 broad5 = lambda matrix: np.tile(matrix[..., np.newaxis], 5)
 
 
-def nexi_dot_optimized_mse_jacobian(param, b, td, Y, b_td_dimensions=2):
+def nexi_dot_optimized_mse_jacobian(param, b, td, Y, protocol_ndim=2):
     nexi_dot_vec_jac_concatenation = nexi_dot_jacobian_concatenated_from_vector(param, b, td)
     nexi_dot_vec = nexi_dot_vec_jac_concatenation[..., 0]
     nexi_dot_vec_jac = nexi_dot_vec_jac_concatenation[..., 1:6]
-    if b_td_dimensions == 1:
+    if protocol_ndim == 1:
         mse_jacobian = np.sum(2 * nexi_dot_vec_jac * broad5(nexi_dot_vec - Y), axis=0)
-    elif b_td_dimensions == 2:
+    elif protocol_ndim == 2:
         mse_jacobian = np.sum(2 * nexi_dot_vec_jac * broad5(nexi_dot_vec - Y), axis=(0, 1))
     else:
         raise NotImplementedError

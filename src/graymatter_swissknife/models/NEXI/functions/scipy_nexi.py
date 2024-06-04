@@ -167,39 +167,39 @@ nexi_jacobian_from_vector = lambda param, b, t: nexi_jacobian(
 # Only relevant function are nexi_optimized_mse_jacobian and nexi_optimized_mse_hessian. Others are subfunction to simplify computation
 
 
-def nexi_optimized_mse_jacobian(param, b, td, Y, b_td_dimensions=2):
+def nexi_optimized_mse_jacobian(param, b, td, Y, protocol_ndim=2):
     '''
     Compute the jacobian of the MSE of the NEXI model with respect to the parameters
     :param param: [tex, Di, De, f]
     :param b: b-values
     :param td: diffusion times
     :param Y: ground truth signal
-    :param b_td_dimensions: 1 if b and td are 1D arrays, 2 if b and td are 2D arrays
+    :param protocol_ndim: 1 if b and td are 1D arrays, 2 if b and td are 2D arrays
     :return: jacobian of the MSE of the NEXI model with respect to the parameters
     '''
     nexi_vec_jac_concatenation = nexi_jacobian_concatenated_from_vector(param, b, td)
     nexi_signal_vec = nexi_vec_jac_concatenation[..., 0]
     nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:5]
-    if b_td_dimensions == 1:
+    if protocol_ndim == 1:
         mse_jacobian = np.sum(2 * nexi_vec_jac * broad4(nexi_signal_vec - Y), axis=0)
-    elif b_td_dimensions == 2:
+    elif protocol_ndim == 2:
         mse_jacobian = np.sum(2 * nexi_vec_jac * broad4(nexi_signal_vec - Y), axis=(0, 1))
     else:
         raise NotImplementedError
     return mse_jacobian
 
 
-def nexi_optimized_mse_hessian(param, b, td, Y, b_td_dimensions=2):
+def nexi_optimized_mse_hessian(param, b, td, Y, protocol_ndim=2):
     nexi_vec_hess_concatenation = nexi_hessian_concatenated_from_vector(param, b, td)
     nexi_signal_vec = nexi_vec_hess_concatenation[..., 0, 0]
     nexi_vec_jac = nexi_vec_hess_concatenation[..., 1]
     nexi_vec_hess = nexi_vec_hess_concatenation[..., 2:6]
-    if b_td_dimensions == 1:
+    if protocol_ndim == 1:
         mse_hessian = np.sum(
             2 * nexi_vec_hess * broad44(nexi_signal_vec - Y) + 2 * broad4(nexi_vec_jac) * broad4T(nexi_vec_jac),
             axis=(0, 1),
         )
-    elif b_td_dimensions == 2:
+    elif protocol_ndim == 2:
         mse_hessian = np.sum(
             2 * nexi_vec_hess * broad44(nexi_signal_vec - Y) + 2 * broad4(nexi_vec_jac) * broad4T(nexi_vec_jac), axis=0
         )

@@ -35,7 +35,7 @@ def nls_loop(target_signal, microstruct_model, acq_param, nls_param_lim, initial
     optim_fun = lambda x: np.sum(np.square(microstruct_model.get_signal(x, acq_param) - target_signal))
 
     # Hessian of this function
-    # fun_hess = lambda x: optim_fun_hess(x, b, td, Y, acq_dimension)
+    # fun_hess = lambda x: optim_fun_hess(x, acq_param, Y, acq_dimension)
 
     # Optimisation function
     if hasattr(microstruct_model, 'get_mse_jacobian'):

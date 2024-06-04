@@ -40,16 +40,16 @@ def extracellular_jacobian(De, b):
 #######################################################################################################################
 
 
-def sandi_signal(Di, De, f, rs, fs, b, td, small_delta):
-    s_sphere = sphere_murdaycotts(rs, 3, b, td, small_delta)
+def sandi_signal(Di, De, f, rs, fs, b, delta, small_delta):
+    s_sphere = sphere_murdaycotts(rs, 3, b, delta, small_delta)
     s_neurite = neurite_signal(Di, b)
     s_extracellular = extracellular_signal(De, b)
     return f * (fs * s_sphere + (1 - fs) * s_neurite) + (1 - f) * s_extracellular
 
 
-def sandi_signal_from_vector(param, b, td, small_delta):
+def sandi_signal_from_vector(param, b, delta, small_delta):
     # param: [Di, De, f, rs, fs]
-    return sandi_signal(param[0], param[1], param[2], param[3], param[4], b, td, small_delta)
+    return sandi_signal(param[0], param[1], param[2], param[3], param[4], b, delta, small_delta)
 
 
 #######################################################################################################################
@@ -57,11 +57,11 @@ def sandi_signal_from_vector(param, b, td, small_delta):
 #######################################################################################################################
 
 
-def sandi_jacobian(Di, De, f, rs, fs, b, td, small_delta):
-    # s_sphere = sphere_murdaycotts(rs, 3, b, td, small_delta)
+def sandi_jacobian(Di, De, f, rs, fs, b, delta, small_delta):
+    # s_sphere = sphere_murdaycotts(rs, 3, b, delta, small_delta)
     s_neurite = neurite_signal(Di, b)
     s_extracellular = extracellular_signal(De, b)
-    s_sphere, s_sphere_jac = sphere_jacobian(rs, 3, b, td, small_delta)
+    s_sphere, s_sphere_jac = sphere_jacobian(rs, 3, b, delta, small_delta)
     s_neurite_jac = neurite_jacobian(Di, b)
     s_extracellular_jac = extracellular_jacobian(De, b)
     signal = f * (fs * s_sphere + (1 - fs) * s_neurite) + (1 - f) * s_extracellular
@@ -73,9 +73,9 @@ def sandi_jacobian(Di, De, f, rs, fs, b, td, small_delta):
     return signal, jacobian
 
 
-def sandi_jacobian_from_vector(param, b, td, small_delta):
+def sandi_jacobian_from_vector(param, b, delta, small_delta):
     # param: [tex, Di, De, De, f, rs, fs]
-    return sandi_jacobian(param[0], param[1], param[2], param[3], param[4], b, td, small_delta)
+    return sandi_jacobian(param[0], param[1], param[2], param[3], param[4], b, delta, small_delta)
 
 
 #######################################################################################################################
@@ -86,11 +86,11 @@ def sandi_jacobian_from_vector(param, b, td, small_delta):
 broad5 = lambda matrix: np.tile(matrix[..., np.newaxis], 5)
 
 
-def sandi_optimized_mse_jacobian(param, b, td, small_delta, Y, b_td_dimensions=2):
-    sandi_vec, sandi_vec_jac = sandi_jacobian_from_vector(param, b, td, small_delta)
-    if b_td_dimensions == 1:
+def sandi_optimized_mse_jacobian(param, b, delta, small_delta, Y, protocol_ndim=2):
+    sandi_vec, sandi_vec_jac = sandi_jacobian_from_vector(param, b, delta, small_delta)
+    if protocol_ndim == 1:
         mse_jacobian = np.sum(2 * sandi_vec_jac * broad5(sandi_vec - Y), axis=0)
-    elif b_td_dimensions == 2:
+    elif protocol_ndim == 2:
         mse_jacobian = np.sum(2 * sandi_vec_jac * broad5(sandi_vec - Y), axis=(0, 1))
     else:
         raise NotImplementedError
