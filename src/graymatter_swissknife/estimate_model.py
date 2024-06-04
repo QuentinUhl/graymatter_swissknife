@@ -12,7 +12,7 @@ from .xgboost.define_xgboost_model import define_xgboost_model
 from .xgboost.apply_xgboost_model import apply_xgboost_model
 
 
-def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_noisemap_path, out_path, 
+def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_noisemap_path, out_path, 
                    mask_path=None, fixed_parameters=None, adjust_parameter_limits=None, 
                    optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
                    n_cores=-1 ,debug=False):
@@ -26,8 +26,8 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         Path to the preprocessed DWI signal.
     bvals_path : str
         Path to the b-values file. b-values must be provided in ms/µm².
-    td_path : str
-        Path to the diffusion time file. Diffusion time must be provided in ms.
+    delta_path : str
+        Path to the big delta file. Δ must be provided in ms.
     small_delta : float
         Small delta value in ms. This value is optional for NEXI (NEXI with Narrow Pulse Approximation (NPA)) but is mandatory for other models.
         If using NEXI with NPA, set small_delta to None.
@@ -71,15 +71,15 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
         os.makedirs(out_path)
 
     # Convert into powder average
-    powder_average_path, updated_bvals_path, updated_td_path, updated_mask_path = powder_average(
-        dwi_path, bvals_path, td_path, mask_path, out_path, debug=debug
+    powder_average_path, updated_bvals_path, updated_delta_path, updated_mask_path = powder_average(
+        dwi_path, bvals_path, delta_path, mask_path, out_path, debug=debug
     )
     # NEXI with Rician Mean correction
     normalized_sigma_filename = normalize_sigma(dwi_path, lowb_noisemap_path, bvals_path, out_path)
     powder_average_signal_npz_filename = save_data_as_npz(
         powder_average_path,
         updated_bvals_path,
-        updated_td_path,
+        updated_delta_path,
         updated_mask_path,
         out_path,
         normalized_sigma_filename=normalized_sigma_filename,
@@ -92,8 +92,8 @@ def estimate_model(model_name, dwi_path, bvals_path, td_path, small_delta, lowb_
     voxel_nb = len(signal)
     sigma = powder_average_signal_npz['sigma']
     bvals = powder_average_signal_npz['b']
-    td = powder_average_signal_npz['td']
-    acq_param = AcquisitionParameters(bvals, td, small_delta=small_delta)
+    delta = powder_average_signal_npz['delta']
+    acq_param = AcquisitionParameters(bvals, delta, small_delta=small_delta)
 
     # Estimate the model parameters
 
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     parser.add_argument('dwi_path', help='path to the preprocessed signals')
     # For conversion from b-values in s/µm² to b-values in ms/µm², divide by 1000
     parser.add_argument('bvals_path', help='path to the b-values (in ms/µm²) txt file')
-    parser.add_argument('td_path', help='path to the diffusion times (in ms) txt file')
+    parser.add_argument('delta_path', help='path to the diffusion times (in ms) txt file')
     parser.add_argument('lowb_noisemap_path', help='path to the lowb noisemap')
     parser.add_argument('out_path', help='path to the output folder')
     # potential arguments
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # estimate_nexi(**vars(parser.parse_args()))
-    estimate_model(model_name=args.model_name, dwi_path=args.dwi_path, bvals_path=args.bvals_path, td_path=args.td_path, 
+    estimate_model(model_name=args.model_name, dwi_path=args.dwi_path, bvals_path=args.bvals_path, delta_path=args.delta_path, 
                    small_delta=args.small_delta, lowb_noisemap_path=args.lowb_noisemap_path, out_path=args.out_path, 
                    mask_path=args.mask_path, fixed_parameters=args.fixed_parameters, adjust_parameter_limits=args.adjust_parameter_limits, 
                    debug=args.debug)

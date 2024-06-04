@@ -4,7 +4,7 @@ import numpy as np
 import nibabel as nib
 
 
-def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=False):
+def powder_average(dwi_path, bvals_path, delta_path, mask_path, out_path, debug=False):
     """
     Compute the powder average of the diffusion-weighted images.
 
@@ -14,8 +14,8 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
         Path to the preprocessed signals.
     bvals_path : str
         Path to the b-values (in ms/µm²) txt file.
-    td_path : str
-        Path to the diffusion times (in ms) txt file.
+    delta_path : str
+        Path to the Δ / big delta (in ms) txt file.
     mask_path : str
         Path to the mask.
     out_path : str
@@ -29,27 +29,27 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
         Path to the powder average image.
     updated_bvals_path : str
         Path to the updated b-values (in ms/µm²) txt file.
-    updated_td_path : str
-        Path to the updated diffusion times (in ms) txt file.
+    updated_delta_path : str
+        Path to the updated Δ / big delta (in ms) txt file.
     """
 
     powder_average_filename = f'{out_path}/powderaverage_dwi.nii.gz'
     updated_bvals_path = f'{out_path}/powderaverage.bval'
-    updated_td_path = f'{out_path}/powderaverage.td'
+    updated_delta_path = f'{out_path}/powderaverage.delta'
     updated_mask_path = f'{out_path}/updated_mask.nii.gz'
     # Re-split the image into different diffusion times
     dwi_image_nii = nib.load(dwi_path)
     dwi_image = dwi_image_nii.get_fdata()
     aff, hdr = dwi_image_nii.affine, dwi_image_nii.header
-    tdvalues = np.loadtxt(td_path).astype(float)
+    deltavalues = np.loadtxt(delta_path).astype(float)
     bvalues = np.loadtxt(bvals_path).astype(float)
     # Initialize powder average image, b-values and diffusion times
     pa_image = []
     pa_b = []
-    pa_td = []
-    for td in np.unique(tdvalues):
+    pa_delta = []
+    for delta in np.unique(deltavalues):
         # Find b0s
-        b0_selection = (tdvalues == td) & (bvalues == 0)
+        b0_selection = (deltavalues == delta) & (bvalues == 0)
         nb_of_b0 = np.sum(b0_selection)
         assert nb_of_b0 != 0
         # Compute the mean of all b0 images to have one unique b0 image
@@ -61,21 +61,21 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
         b0_image = np.abs(b0_image)
         # Replace 0 in b0_image by np.nan
         b0_image[b0_image == 0] = np.nan
-        # Put the b0 image, b and td inside the lists
+        # Put the b0 image, b and delta inside the lists
         pa_image.append((~np.isnan(b0_image)).astype(float))
         pa_b.append(0)
-        pa_td.append(td)
+        pa_delta.append(delta)
         # Sort the unique (non-zero) b-values per diffusion time
-        nonzero_b = np.sort(np.unique(bvalues[tdvalues == td]))[1:]
+        nonzero_b = np.sort(np.unique(bvalues[deltavalues == delta]))[1:]
         for b in nonzero_b:
-            selection = (tdvalues == td) & (bvalues == b)
+            selection = (deltavalues == delta) & (bvalues == b)
             norm_image = np.mean(dwi_image[..., selection], axis=-1)
             # Compute the normalization inside the mask
             norm_image = np.divide(norm_image, b0_image)
             # Add all features to the lists
             pa_image.append(norm_image)
             pa_b.append(b)
-            pa_td.append(td)
+            pa_delta.append(delta)
     # Convert the list of powder averaged images into numpy array
     pa_image = np.stack(pa_image, axis=-1)
 
@@ -118,7 +118,7 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
     without_b0 = np.array(pa_b) != 0
     pa_img_no_b0 = pa_image[..., without_b0]
     pa_b_no_b0 = np.array(pa_b)[without_b0]
-    pa_td_no_b0 = np.array(pa_td)[without_b0]
+    pa_delta_no_b0 = np.array(pa_delta)[without_b0]
     powder_average_nii = nib.Nifti1Image(pa_img_no_b0, affine=aff, header=hdr)
     bool_mask_nii = nib.Nifti1Image(bool_mask, affine=aff, header=hdr)
     nib.save(powder_average_nii, powder_average_filename)
@@ -128,15 +128,15 @@ def powder_average(dwi_path, bvals_path, td_path, mask_path, out_path, debug=Fal
             f"Without b0s, image shape : {pa_img_no_b0.shape}  with maximum value of {np.nanmax(pa_img_no_b0)}"
         )
         logging.info(f"b-values :{pa_b_no_b0}")
-        logging.info(f"td values :{pa_td_no_b0}")
+        logging.info(f"delta values :{pa_delta_no_b0}")
 
     # Save b-values and diffusion times
     np.savetxt(updated_bvals_path, pa_b_no_b0, fmt='%1.3f')
-    np.savetxt(updated_td_path, pa_td_no_b0, fmt='%1.3f')
+    np.savetxt(updated_delta_path, pa_delta_no_b0, fmt='%1.3f')
 
     logging.info("Powder average finished !")
 
-    return powder_average_filename, updated_bvals_path, updated_td_path, updated_mask_path
+    return powder_average_filename, updated_bvals_path, updated_delta_path, updated_mask_path
 
 
 def normalize_sigma(dwi_path, lowb_noisemap_path, bvals_path, out_path):
@@ -190,7 +190,7 @@ def normalize_sigma(dwi_path, lowb_noisemap_path, bvals_path, out_path):
 def save_data_as_npz(
     powder_average_filename,
     bvals_path,
-    td_path,
+    delta_path,
     updated_mask_path,
     out_path, 
     normalized_sigma_filename=None,
@@ -206,7 +206,7 @@ def save_data_as_npz(
         Path to the powder-average image
     bvals_path : str
         Path to the b-values file (in ms/µm2)
-    td_path : str
+    delta_path : str
         Path to the diffusion times file (in ms)
     out_path : str
         Path to the output folder
@@ -226,13 +226,13 @@ def save_data_as_npz(
     pa_image_nii = nib.load(powder_average_filename)
     pa_image = np.clip(pa_image_nii.get_fdata(), 0, 1)
     bval = np.loadtxt(bvals_path)
-    tdval = np.loadtxt(td_path)
+    deltaval = np.loadtxt(delta_path)
     mask = nib.load(updated_mask_path).get_fdata()
 
     if debug:
         logging.info("Sanity Check")
         logging.info(f"b-values : {bval}")
-        logging.info(f"diffusion times : {tdval}")
+        logging.info(f"diffusion times : {deltaval}")
 
     # Initialize the extraction of the signal values where there is no NaN
     mask = mask.astype(bool) & (~np.any(np.isnan(pa_image), axis=-1))
@@ -254,7 +254,7 @@ def save_data_as_npz(
             signal=signal,
             sigma=sigma,
             b=bval,
-            td=tdval,
+            delta=deltaval,
             small_delta=small_delta,
             mask=mask
         )
@@ -263,7 +263,7 @@ def save_data_as_npz(
             powder_average_signal_npz_filename,
             signal=signal,
             b=bval,
-            td=tdval,
+            delta=deltaval,
             small_delta=small_delta,
             mask=mask
         )
