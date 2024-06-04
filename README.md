@@ -51,7 +51,7 @@ estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_n
 
 `small_delta` (float): The value of δ in your protocol, in ms. δ is the duration of a gradient pulse. A future update will allow multiple δ in the protocol.
 
-`lowb_noisemap_path`: The path to the noisemap calculated using only the small b-values (b < 2 ms/µm²) and Marchenko-Pastur principal component analysis (MP-PCA) denoising. This noisemap is used to calculate the signal-to-noise ratio (SNR) of the data.
+`lowb_noisemap_path`: The path to the noisemap calculated using only the small b-values (b < 2 ms/µm²) and Marchenko-Pastur principal component analysis (MP-PCA) denoising. This noisemap is used to calculate the signal-to-noise ratio (SNR) of the data. To get your estimates without noise correction, e.g. if you don't have any noisemap, use the function `estimate_model_noiseless` instead (Not recommended).
 
 `out_path`: The folder where the estimated parameters will be saved as output.
 
