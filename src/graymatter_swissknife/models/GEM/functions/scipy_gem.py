@@ -36,17 +36,17 @@ def legpts(n, interval=np.array([-1, 1])):
 #######################################################################################################################
 
 
-def gem_signal(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, td, small_delta):
+def gem_signal(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, delta, small_delta):
     """
     Computes the signal of the Generalized Exchange Model from the microstructure parameters texs, texd, Ds0, Dd, De,
-    fn, radius and fsn and the acquisition parameters b, td and small_delta. b and td must have the same shape.
+    fn, radius and fsn and the acquisition parameters b, delta and small_delta. b and delta must have the same shape.
     """
     # If Δ and b are single, expand them
     if np.isscalar(b):
         b = np.array([b])
-    if np.isscalar(td):
-        td = np.array([td])
-    assert len(b) == len(td), "b and td must have the same length"
+    if np.isscalar(delta):
+        delta = np.array([delta])
+    assert len(b) == len(delta), "b and delta must have the same length"
     assert np.isscalar(small_delta), "𝛿 must be a scalar"
     len_b = len(b)
     return_scalar = True if len_b == 1 else False
@@ -72,14 +72,14 @@ def gem_signal(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, td, small_delta):
     f[:, 1] = fd
     f[:, 2] = fe
     # Define the q-value
-    q2 = b / (td - small_delta / 3)
+    q2 = b / (delta - small_delta / 3)
     q = np.sqrt(q2)
     # Compute the signal from the differential equation
     flat_f = f.flatten()
     # Expand dimensions to allow broadcasting
     q = np.expand_dims(q, axis=(1, 2, 3))
     q2 = np.expand_dims(q2, axis=(1, 2, 3))
-    td = np.expand_dims(td, axis=(1, 2, 3))
+    delta = np.expand_dims(delta, axis=(1, 2, 3))
     R = np.expand_dims(R, axis=(0, 1))
     D = np.expand_dims(D, axis=0)
     # Define the shape of the solution
@@ -91,9 +91,9 @@ def gem_signal(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, td, small_delta):
     # S_e = np.zeros((len_b, len_w))
     St = first_pulse(flat_f, D, R, radius, Ds0, small_delta, q, S_shape)
     St = St.reshape(S_shape)
-    St = np.einsum('ijkl, ijl->ijk', expm((td - small_delta) * (R - q2 * D)), St)
+    St = np.einsum('ijkl, ijl->ijk', expm((delta - small_delta) * (R - q2 * D)), St)
     St = St.flatten()
-    St = second_pulse(St, D, R, radius, Ds0, small_delta, td, q, S_shape)
+    St = second_pulse(St, D, R, radius, Ds0, small_delta, delta, q, S_shape)
     St = St.reshape(S_shape)
     S = St[..., 0] + St[..., 1] + St[..., 2]
     # S_s = St[..., 0]
@@ -124,22 +124,22 @@ def first_pulse(f, D, R, radius, Ds0, small_delta, q, S_shape):
     return S
 
 
-def second_pulse(S_td, D, R, radius, Ds0, small_delta, td, q, S_shape):
+def second_pulse(S_delta, D, R, radius, Ds0, small_delta, delta, q, S_shape):
     """ Modelize the second gradient pulse function and solve the differential equation for GEM. """
     flat_q = q.flatten()
-    td = td.flatten()[:, np.newaxis]
+    delta = delta.flatten()[:, np.newaxis]
     def dSdt(t, S):
         S = S.reshape(S_shape)
         q2D_t = (q * (small_delta - t) / small_delta) ** 2 * D
-        q2D_t[..., 0, 0] = np.expand_dims(dlog_sphere_signal_second_pulse(t+td, radius, Ds0, flat_q, td, small_delta), axis=-1)
+        q2D_t[..., 0, 0] = np.expand_dims(dlog_sphere_signal_second_pulse(t+delta, radius, Ds0, flat_q, delta, small_delta), axis=-1)
         return np.einsum('ijkl, ijl->ijk', (R - q2D_t), S).flatten()
     # Solve the differential equation starting from the initial solution f at time Δ+𝛿
-    S = solve_ivp(dSdt, t_span=np.array([0, small_delta]), y0=S_td, method='RK45',
+    S = solve_ivp(dSdt, t_span=np.array([0, small_delta]), y0=S_delta, method='RK45',
                   t_eval=np.array([0, small_delta]), rtol=1e-9, atol=1e-9).y[:, -1]
     return S
 
 
-def gem_signal_from_vector(parameters, b, td, small_delta):
+def gem_signal_from_vector(parameters, b, delta, small_delta):
     """Get signal from single Ground Truth."""
     texs = parameters[0]
     texd = parameters[1]
@@ -148,14 +148,14 @@ def gem_signal_from_vector(parameters, b, td, small_delta):
     fn = parameters[4]
     radius = parameters[5]
     fsn = parameters[6]
-    return gem_signal(texs, texd, 3, Dd, De, fn, radius, fsn, b, td, small_delta)
+    return gem_signal(texs, texd, 3, Dd, De, fn, radius, fsn, b, delta, small_delta)
 
 
 #######################################################################################################################
 # GEM jacobian
 #######################################################################################################################
 
-def gem_jacobian_from_vector(parameters, b, td, small_delta):
+def gem_jacobian_from_vector(parameters, b, delta, small_delta):
     """Get signal from single Ground Truth."""
     texs = parameters[0]
     texd = parameters[1]
@@ -164,11 +164,11 @@ def gem_jacobian_from_vector(parameters, b, td, small_delta):
     fn = parameters[4]
     radius = parameters[5]
     fsn = parameters[6]
-    _, gem_jac = gem_jacobian(texs, texd, 3, Dd, De, fn, radius, fsn, b, td, small_delta)
+    _, gem_jac = gem_jacobian(texs, texd, 3, Dd, De, fn, radius, fsn, b, delta, small_delta)
     return gem_jac
 
 
-def gem_jacobian_concatenated_from_vector(parameters, b, td, small_delta):
+def gem_jacobian_concatenated_from_vector(parameters, b, delta, small_delta):
     """Get signal from single Ground Truth."""
     texs = parameters[0]
     texd = parameters[1]
@@ -177,21 +177,21 @@ def gem_jacobian_concatenated_from_vector(parameters, b, td, small_delta):
     fn = parameters[4]
     radius = parameters[5]
     fsn = parameters[6]
-    gem_signal, gem_jac = gem_jacobian(texs, texd, 3, Dd, De, fn, radius, fsn, b, td, small_delta)
+    gem_signal, gem_jac = gem_jacobian(texs, texd, 3, Dd, De, fn, radius, fsn, b, delta, small_delta)
     return gem_signal, gem_jac
 
 
-def gem_jacobian(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, td, small_delta):
+def gem_jacobian(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, delta, small_delta):
     """
     Computes the jacobian of the Generalized Exchange Model from the microstructure parameters texs, texd, Ds0, Dd, De,
-    fn, radius and fsn and the acquisition parameters b, td and small_delta. b and td must have the same shape.
+    fn, radius and fsn and the acquisition parameters b, delta and small_delta. b and delta must have the same shape.
     """
     # If Δ and b are single, expand them
     if np.isscalar(b):
         b = np.array([b])
-    if np.isscalar(td):
-        td = np.array([td])
-    assert len(b) == len(td), "b and td must have the same length"
+    if np.isscalar(delta):
+        delta = np.array([delta])
+    assert len(b) == len(delta), "b and delta must have the same length"
     assert np.isscalar(small_delta), "𝛿 must be a scalar"
     len_b = len(b)
     return_scalar = True if len_b == 1 else False
@@ -205,14 +205,14 @@ def gem_jacobian(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, td, small_delta):
                                                                                                      fn, fsn,
                                                                                                      eps, len_b, len_w)
     # Define the q-value
-    q2 = b / (td - small_delta / 3)
+    q2 = b / (delta - small_delta / 3)
     q = np.sqrt(q2)
     # Flatten the initial solution
     S0_double = S0_double.flatten()
     # Expand dimensions to allow broadcasting
     q = np.expand_dims(q, axis=(1, 2, 3))
     q2 = np.expand_dims(q2, axis=(1, 2, 3))
-    td = np.expand_dims(td, axis=(1, 2, 3))
+    delta = np.expand_dims(delta, axis=(1, 2, 3))
     # Compute the signal from the differential equation
     S_double_shape = (1+n_param, len_b, len_w, 3)
     St = first_pulse_jacobian(S0_double, D, R, radius, Ds0,
@@ -223,11 +223,11 @@ def gem_jacobian(texs, texd, Ds0, Dd, De, fn, radius, fsn, b, td, small_delta):
     St = plateau_jacobian(St, D, R,
                           R_texs, R_texd, R_fn, R_fsn,
                           D_Dd, D_De,
-                          small_delta, td, q2)
+                          small_delta, delta, q2)
     St = second_pulse_jacobian(St, D, R, radius, Ds0,
                                R_texs, R_texd, R_fn, R_fsn,
                                D_Dd, D_De,
-                               small_delta, td, q, S_double_shape)
+                               small_delta, delta, q, S_double_shape)
     St = St.reshape(S_double_shape)
     S_all = (St[..., 0] + St[..., 1] + St[..., 2]).astype(float)
     S_all = np.einsum('ijk, k->ij', S_all, w)
@@ -380,21 +380,21 @@ def expansion(X, dX_dp):
     return dX_dp-lie_1+lie_2-lie_3+lie_4-lie_5+lie_6
 
 
-def plateau_jacobian(S_double_small_delta, D, R, R_texs, R_texd, R_fn, R_fsn, D_Dd, D_De, small_delta, td, q2):
+def plateau_jacobian(S_double_small_delta, D, R, R_texs, R_texd, R_fn, R_fsn, D_Dd, D_De, small_delta, delta, q2):
     S_double_small_delta = S_double_small_delta.astype(float)
     A = R - q2 * D
-    exponential = expm((td - small_delta) * A)
+    exponential = expm((delta - small_delta) * A)
     # Initialisation of the exponential solution
     S_small_delta = S_double_small_delta[0, ...]
     # Define solution at time Δ
     S_double_delta = np.einsum('ijkl,pijl->pijk', exponential, S_double_small_delta)
     # Add the contribution of the (R-q2D) derivatives to the derivative of the exponential
-    S_double_delta[1, ...] = S_double_delta[1, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((td - small_delta) * A, (td - small_delta) * R_texs)), S_small_delta)  # S_texs
-    S_double_delta[2, ...] = S_double_delta[2, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((td - small_delta) * A, (td - small_delta) * R_texd)), S_small_delta)  # S_texd
-    S_double_delta[3, ...] = S_double_delta[3, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((td - small_delta) * A, -(td - small_delta) * q2 * D_Dd)), S_small_delta)  # S_Dd
-    S_double_delta[4, ...] = S_double_delta[4, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((td - small_delta) * A, -(td - small_delta) * q2 * D_De)), S_small_delta)  # S_De
-    S_double_delta[5, ...] = S_double_delta[5, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((td - small_delta) * A, (td - small_delta) * R_fn)), S_small_delta)  # S_fn
-    S_double_delta[7, ...] = S_double_delta[7, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((td - small_delta) * A, (td - small_delta) * R_fsn)), S_small_delta)  # S_fsn
+    S_double_delta[1, ...] = S_double_delta[1, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, (delta - small_delta) * R_texs)), S_small_delta)  # S_texs
+    S_double_delta[2, ...] = S_double_delta[2, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, (delta - small_delta) * R_texd)), S_small_delta)  # S_texd
+    S_double_delta[3, ...] = S_double_delta[3, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, -(delta - small_delta) * q2 * D_Dd)), S_small_delta)  # S_Dd
+    S_double_delta[4, ...] = S_double_delta[4, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, -(delta - small_delta) * q2 * D_De)), S_small_delta)  # S_De
+    S_double_delta[5, ...] = S_double_delta[5, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, (delta - small_delta) * R_fn)), S_small_delta)  # S_fn
+    S_double_delta[7, ...] = S_double_delta[7, ...] + np.einsum('ijkl,ijl->ijk', np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, (delta - small_delta) * R_fsn)), S_small_delta)  # S_fsn
     # Flatten the solution
     S_double_delta = S_double_delta.flatten()
     return S_double_delta
@@ -405,7 +405,7 @@ def plateau_jacobian(S_double_small_delta, D, R, R_texs, R_texd, R_fn, R_fsn, D_
 
 
 # Define the function of the differential equation
-def dSdouble_dt_second_pulse(t, S_double, factor, radius, Ds0, flat_q, td, small_delta, D, D_Dd, D_De, R, R_texs, R_texd, R_fn, R_fsn, S_double_shape):
+def dSdouble_dt_second_pulse(t, S_double, factor, radius, Ds0, flat_q, delta, small_delta, D, D_Dd, D_De, R, R_texs, R_texd, R_fn, R_fsn, S_double_shape):
     S_double = S_double.reshape(S_double_shape).astype(float)
     new_S_double = np.zeros(S_double_shape)
     S, S_texs, S_texd, S_Dd, S_De, S_fn, S_radius, S_fsn = (S_double[0, ...], S_double[1, ...], S_double[2, ...],
@@ -413,7 +413,7 @@ def dSdouble_dt_second_pulse(t, S_double, factor, radius, Ds0, flat_q, td, small
                                                             S_double[6, ...], S_double[7, ...])
     # Define the gradient function
     q2D_fun = factor * (small_delta - t) ** 2 * D
-    q2Ds, der_q2Ds_radius = jacobian_dlog_sphere_signal_second_pulse(t+td, radius, Ds0, flat_q, td, small_delta)
+    q2Ds, der_q2Ds_radius = jacobian_dlog_sphere_signal_second_pulse(t+delta, radius, Ds0, flat_q, delta, small_delta)
     q2D_fun[..., 0, 0] = np.expand_dims(q2Ds, axis=-1)
     q2D_radius = np.zeros((S_double_shape[1], S_double_shape[2], 3, 3))
     q2D_radius[..., 0, 0] = np.expand_dims(der_q2Ds_radius, axis=-1)
@@ -430,16 +430,16 @@ def dSdouble_dt_second_pulse(t, S_double, factor, radius, Ds0, flat_q, td, small
     return new_S_double.flatten()
 
 
-def second_pulse_jacobian(S_delta, D, R, radius, Ds0, R_texs, R_texd, R_fn, R_fsn, D_Dd, D_De, small_delta, td, q, S_double_shape):
+def second_pulse_jacobian(S_delta, D, R, radius, Ds0, R_texs, R_texd, R_fn, R_fsn, D_Dd, D_De, small_delta, delta, q, S_double_shape):
     factor = (q / small_delta) ** 2
     flat_q = q.flatten()
-    td = td.flatten()
+    delta = delta.flatten()
     # Solve the differential equation starting from the initial solution S_delta
     # Solution at time Δ+𝛿
     S_double = solve_ivp(dSdouble_dt_second_pulse, t_span=np.array([0, small_delta], dtype=object),
                          y0=S_delta, method='RK45', t_eval=np.array([0, small_delta], dtype=object),
                          rtol=1e-9, atol=1e-9,
-                         args=(factor, radius, Ds0, flat_q, td, small_delta,
+                         args=(factor, radius, Ds0, flat_q, delta, small_delta,
                                D, D_Dd, D_De, R, R_texs, R_texd, R_fn, R_fsn, S_double_shape)).y[:, -1]
     return S_double
 
@@ -451,7 +451,7 @@ def second_pulse_jacobian(S_delta, D, R, radius, Ds0, R_texs, R_texd, R_fn, R_fs
 
 def gem_optimized_mse_jacobian(parameters, acq_parameters, signal_gt):
     gem_vec, gem_jac_vec = gem_jacobian_concatenated_from_vector(parameters, acq_parameters.b,
-                                                                 acq_parameters.td,
+                                                                 acq_parameters.delta,
                                                                  acq_parameters.small_delta)
     if acq_parameters.ndim == 1:
         mse_jacobian = np.sum(2 * gem_jac_vec * broad7(gem_vec - signal_gt), axis=0)
