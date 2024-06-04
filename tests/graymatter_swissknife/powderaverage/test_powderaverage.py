@@ -13,10 +13,10 @@ from src.graymatter_swissknife.powderaverage.powderaverage import powder_average
 
 def test_powder_average():
 
-    powder_average_filename, bval_filename, td_filename, mask_filename = powder_average(
+    powder_average_filename, bval_filename, delta_filename, mask_filename = powder_average(
         'tests/graymatter_swissknife/data/phantom.nii.gz',
         'tests/graymatter_swissknife/data/phantom.bval',
-        'tests/graymatter_swissknife/data/phantom.td',
+        'tests/graymatter_swissknife/data/phantom.delta',
         'tests/graymatter_swissknife/data/mask.nii.gz',
         'tests/graymatter_swissknife/data',
         debug=False,
@@ -32,10 +32,10 @@ def test_powder_average():
         equal_nan=True,
     )
     assert np.allclose(np.loadtxt(bval_filename), np.loadtxt('tests/graymatter_swissknife/data/powderaverage_ref.bval'))
-    assert np.allclose(np.loadtxt(td_filename), np.loadtxt('tests/graymatter_swissknife/data/powderaverage_ref.td'))
+    assert np.allclose(np.loadtxt(delta_filename), np.loadtxt('tests/graymatter_swissknife/data/powderaverage_ref.delta'))
     os.remove(powder_average_filename)
     os.remove(bval_filename)
-    os.remove(td_filename)
+    os.remove(delta_filename)
     os.remove(mask_filename)
 
 

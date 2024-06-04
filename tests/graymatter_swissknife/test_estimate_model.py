@@ -19,7 +19,7 @@ def test_estimate_model():
         'Nexi',
         'tests/graymatter_swissknife/data/phantom.nii.gz',
         'tests/graymatter_swissknife/data/phantom.bval',
-        'tests/graymatter_swissknife/data/phantom.td',
+        'tests/graymatter_swissknife/data/phantom.delta',
         None,
         'tests/graymatter_swissknife/data/lowb_noisemap.nii.gz',
         'tests/graymatter_swissknife/data/nexi_rice_mean',
@@ -29,7 +29,7 @@ def test_estimate_model():
 
     powder_average_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage_dwi.nii.gz'
     bval_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage.bval'
-    td_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage.td'
+    delta_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage.delta'
     powder_average_npz_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/powderaverage_signal.npz'
     sigma_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/normalized_sigma.nii.gz'
     updated_mask_filename = 'tests/graymatter_swissknife/data/nexi_rice_mean/updated_mask.nii.gz'
@@ -40,11 +40,11 @@ def test_estimate_model():
         equal_nan=True,
     )
     assert np.allclose(np.loadtxt(bval_filename), np.loadtxt('tests/graymatter_swissknife/data/powderaverage_ref.bval'))
-    assert np.allclose(np.loadtxt(td_filename), np.loadtxt('tests/graymatter_swissknife/data/powderaverage_ref.td'))
+    assert np.allclose(np.loadtxt(delta_filename), np.loadtxt('tests/graymatter_swissknife/data/powderaverage_ref.delta'))
 
     os.remove(powder_average_filename)
     os.remove(bval_filename)
-    os.remove(td_filename)
+    os.remove(delta_filename)
     os.remove(powder_average_npz_filename)
     os.remove(sigma_filename)
     os.remove(updated_mask_filename)

@@ -73,4 +73,4 @@ def generate_phantom():
 
     # Save diffusion times
     np.savetxt('tests/graymatter_swissknife/data/phantom.bval', b, fmt='%.4f')
-    np.savetxt('tests/graymatter_swissknife/data/phantom.td', t, fmt='%.4f')
+    np.savetxt('tests/graymatter_swissknife/data/phantom.delta', t, fmt='%.4f')

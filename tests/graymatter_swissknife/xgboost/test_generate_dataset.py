@@ -5,7 +5,7 @@ from src.graymatter_swissknife.xgboost.generate_dataset import generate_dataset
 
 def test_generate_dataset():
     microstruct_model = Nexi()
-    acq_param = AcquisitionParameters(b=[1, 2, 3], td=[20, 20, 30])
+    acq_param = AcquisitionParameters(b=[1, 2, 3], delta=[20, 20, 30])
     n_samples = 100
     sigma = None
     n_cores = -1
