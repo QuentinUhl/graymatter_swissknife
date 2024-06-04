@@ -45,9 +45,9 @@ estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_n
 
 `dwi_path`: The path to the diffusion-weighted image (DWI) data in NIfTI format. This data contains the preprocessed diffusion-weighted volumes acquired from your imaging study.
 
-`bvals_path`: The path to the file containing the b-value of each sequence in the DWI data, in ms/µm². B-values specify the strength and timing of diffusion sensitization gradients for each volume in the DWI data.
+`bvals_path`: The path to the file containing the b-value of each volume in the DWI data, in ms/µm². B-values specify the strength and timing of diffusion sensitization gradients for each volume in the DWI data.
 
-`delta_path`: The path to the file containing the Δ of each sequence, in ms. This file provides information about Δ for each volume in the DWI data. Δ is the time at the beginning of the second gradient pulse.
+`delta_path`: The path to the file containing the Δ of each volume in the DWI data, in ms. Δ is the time at the beginning of the second gradient pulse in the PGSE sequence.
 
 `small_delta` (float): The value of δ in your protocol, in ms. δ is the duration of a gradient pulse. A future update will allow multiple δ in the protocol.
 
