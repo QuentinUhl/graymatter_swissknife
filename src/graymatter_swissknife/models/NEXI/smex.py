@@ -42,12 +42,12 @@ class Smex(MicroStructModel):
     @classmethod
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
-        return smex_signal_from_vector(parameters, acq_parameters.b, acq_parameters.td, acq_parameters.small_delta)
+        return smex_signal_from_vector(parameters, acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta)
 
     @classmethod
     def get_jacobian(cls, parameters, acq_parameters):
         """Get jacobian from single Ground Truth."""
-        return smex_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.td, acq_parameters.small_delta)
+        return smex_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta)
 
     @classmethod
     def get_hessian(cls, parameters, acq_parameters):

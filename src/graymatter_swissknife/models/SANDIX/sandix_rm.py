@@ -47,13 +47,13 @@ class SandixRiceMean(MicroStructModel):
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
         return rice_mean(sandix_signal_from_vector(parameters[:-1],
-                                                   acq_parameters.b, acq_parameters.td, acq_parameters.small_delta),
+                                                   acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta),
                          parameters[-1])
 
     @classmethod
     def get_jacobian(cls, parameters, acq_parameters):
         """Get jacobian from single Ground Truth."""
-        concatenated = sandix_concatenated_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.td,
+        concatenated = sandix_concatenated_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.delta,
                                                        acq_parameters.small_delta)
         signal, jacobian = concatenated[..., 0], concatenated[..., 1:]
         # Turn last parameter jacobian to 0 to avoid updates
@@ -69,7 +69,7 @@ class SandixRiceMean(MicroStructModel):
     @classmethod
     def get_mse_jacobian(cls, parameters, acq_parameters, signal_gt):
         """Get signal from single Ground Truth."""
-        concatenated = sandix_concatenated_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.td,
+        concatenated = sandix_concatenated_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.delta,
                                                        acq_parameters.small_delta)
         signal, jacobian = concatenated[..., 0], concatenated[..., 1:]
         sandix_rm_signal_vec, sandix_rm_vec_jac = rice_mean_and_jacobian(signal, parameters[-1], dnu=jacobian)

@@ -45,12 +45,12 @@ class SandiRiceMean(MicroStructModel):
     @classmethod
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
-        return rice_mean(sandi_signal_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.td, acq_parameters.small_delta), parameters[-1])
+        return rice_mean(sandi_signal_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta), parameters[-1])
 
     @classmethod
     def get_jacobian(cls, parameters, acq_parameters):
         """Get jacobian from single Ground Truth."""
-        signal, jacobian = sandi_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.td,
+        signal, jacobian = sandi_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.delta,
                                                       acq_parameters.small_delta)
         # Turn last parameter jacobian to 0 to avoid updates
         _, sandi_rm_vec_jac = rice_mean_and_jacobian(signal, parameters[-1], dnu=jacobian)
@@ -65,7 +65,7 @@ class SandiRiceMean(MicroStructModel):
     @classmethod
     def get_mse_jacobian(cls, parameters, acq_parameters, signal_gt):
         """Get signal from single Ground Truth."""
-        signal, jacobian = sandi_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.td,
+        signal, jacobian = sandi_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.delta,
                                                       acq_parameters.small_delta)
         sandi_rm_signal_vec, sandi_rm_vec_jac = rice_mean_and_jacobian(signal, parameters[-1], dnu=jacobian)
         if acq_parameters.ndim == 1:

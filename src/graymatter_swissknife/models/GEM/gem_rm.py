@@ -45,7 +45,7 @@ class GemRiceMean(MicroStructModel):
     @classmethod
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
-        return rice_mean(gem_signal_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.td,
+        return rice_mean(gem_signal_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.delta,
                                                 acq_parameters.small_delta), parameters[-1])
 
     @classmethod
@@ -53,7 +53,7 @@ class GemRiceMean(MicroStructModel):
         """Get jacobian from single Ground Truth."""
         gem_signal, gem_jac = gem_jacobian_concatenated_from_vector(parameters[:-1],
                                                                     acq_parameters.b,
-                                                                    acq_parameters.td,
+                                                                    acq_parameters.delta,
                                                                     acq_parameters.small_delta)
         # Turn last parameter jacobian to 0 to avoid updates
         _, gem_rm_jac = rice_mean_and_jacobian(gem_signal, parameters[-1], dnu=gem_jac)
@@ -62,7 +62,7 @@ class GemRiceMean(MicroStructModel):
     @classmethod
     def get_hessian(cls, parameters, acq_parameters):
         """Get hessian from single Ground Truth."""
-        return None  # KM_sphere_vec_hess(parameters, acq_parameters.b, acq_parameters.td)
+        return None  # KM_sphere_vec_hess(parameters, acq_parameters.b, acq_parameters.delta)
 
     # Optimized methods for Non-linear Least Squares
     @classmethod
@@ -70,7 +70,7 @@ class GemRiceMean(MicroStructModel):
         """Get jacobian of Mean Square Error from single Ground Truth."""
         gem_signal, gem_jac = gem_jacobian_concatenated_from_vector(parameters[:-1],
                                                                     acq_parameters.b,
-                                                                    acq_parameters.td,
+                                                                    acq_parameters.delta,
                                                                     acq_parameters.small_delta)
         gem_rm_signal, gem_rm_jac = rice_mean_and_jacobian(gem_signal, parameters[-1], dnu=gem_jac)
         if acq_parameters.ndim == 1:

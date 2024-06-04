@@ -47,7 +47,7 @@ class SmexRiceMean(MicroStructModel):
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
         return rice_mean(smex_signal_from_vector(parameters[:4],
-                                                               acq_parameters.b, acq_parameters.td,
+                                                               acq_parameters.b, acq_parameters.delta,
                                                                acq_parameters.small_delta),
                          parameters[4])
 

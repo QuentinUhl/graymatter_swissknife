@@ -43,12 +43,12 @@ class Sandi(MicroStructModel):
     @classmethod
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
-        return sandi_signal_from_vector(parameters, acq_parameters.b, acq_parameters.td, acq_parameters.small_delta)
+        return sandi_signal_from_vector(parameters, acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta)
 
     @classmethod
     def get_jacobian(cls, parameters, acq_parameters):
         """Get jacobian from single Ground Truth."""
-        signal, jacobian = sandi_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.td,
+        signal, jacobian = sandi_jacobian_from_vector(parameters, acq_parameters.b, acq_parameters.delta,
                                                       acq_parameters.small_delta)
         return jacobian
 
@@ -61,11 +61,11 @@ class Sandi(MicroStructModel):
     @classmethod
     def get_mse_jacobian(cls, parameters, acq_parameters, signal_gt):
         """Get signal from single Ground Truth."""
-        return sandi_optimized_mse_jacobian(parameters, acq_parameters.b, acq_parameters.td, acq_parameters.small_delta,
+        return sandi_optimized_mse_jacobian(parameters, acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta,
                                             signal_gt, acq_parameters.ndim)
 
 
     # @classmethod
     # def get_torch_signal(cls, parameters, acq_parameters):
     #     """Get signal from single Ground Truth."""
-    #     return torch_sandi_signal_from_vector(parameters, acq_parameters.b, acq_parameters.td, acq_parameters.small_delta)
+    #     return torch_sandi_signal_from_vector(parameters, acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta)
