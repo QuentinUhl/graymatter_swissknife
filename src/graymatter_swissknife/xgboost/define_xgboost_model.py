@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interpn
 
 def define_xgboost_model(xgboost_model_path, retrain_xgboost, 
-                         microstruct_model, acq_param, n_training_samples, sigma=None, n_cores=-1):
+                         microstruct_model, acq_param, n_training_samples, sigma=None, force_cpu=False, n_cores=-1):
     """Load a XGBoost model from a file or generate it.
 
     Args:
@@ -22,16 +22,21 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
     Returns:
         object: The XGBoost model.        
     """
+    # Check if the user wants to force the CPU if the GPU has low memory
+    if force_cpu:
+        device = 'cpu'
+    else:
+        device = 'gpu'  # Use GPU acceleration
     
     xgboost_model = XGBRegressor(
                                     tree_method="hist", 
                                     n_estimators=512,
                                     early_stopping_rounds=64,
-                                    n_jobs=16,
+                                    n_jobs=n_cores,
                                     max_depth=16,
                                     multi_strategy="one_output_per_tree",
                                     subsample=0.6,
-                                    device='gpu'  # Use GPU acceleration
+                                    device=device
                                 )
 
     # Check if the path leads to an existing file

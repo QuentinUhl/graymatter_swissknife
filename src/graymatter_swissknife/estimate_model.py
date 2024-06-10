@@ -15,7 +15,7 @@ from .xgboost.apply_xgboost_model import apply_xgboost_model
 def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_noisemap_path, out_path, 
                    mask_path=None, fixed_parameters=None, adjust_parameter_limits=None, 
                    optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
-                   n_cores=-1 ,debug=False):
+                   n_cores=-1, force_cpu=False, debug=False):
     """
     Estimate the model parameters for a given set of preprocessed signals,
     providing the b-values, diffusion times and low b-values noise map. A mask is optional but highly recommended.
@@ -164,7 +164,7 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
         # Define the XGBoost model from a file or generate and train it
         n_training_samples = 1000000
         xgboost_model = define_xgboost_model(xgboost_model_path, retrain_xgboost, 
-                                             microstruct_model, acq_param, n_training_samples, sigma, n_cores)
+                                             microstruct_model, acq_param, n_training_samples, sigma, force_cpu, n_cores)
         
         # Apply the XGBoost model
         estimations = apply_xgboost_model(xgboost_model, signal, microstruct_model)

@@ -15,7 +15,7 @@ from .xgboost.apply_xgboost_model import apply_xgboost_model
 def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small_delta, out_path, 
                              mask_path=None, fixed_parameters=None, adjust_parameter_limits=None, 
                              optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
-                             n_cores=-1, debug=False):
+                             n_cores=-1, force_cpu=False, debug=False):
     """
     Estimate the noiseless NEXI model parameters for a given set of preprocessed signals,
     providing the b-values and diffusion times. A mask is optional but highly recommended.
@@ -154,7 +154,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small
         # Define the XGBoost model from a file or generate and train it
         n_training_samples = 1000000
         xgboost_model = define_xgboost_model(xgboost_model_path, retrain_xgboost, 
-                                             microstruct_model, acq_param, n_training_samples, None, n_cores)
+                                             microstruct_model, acq_param, n_training_samples, None, force_cpu, n_cores)
         
         # Apply the XGBoost model
         estimations = apply_xgboost_model(xgboost_model, signal, microstruct_model)
