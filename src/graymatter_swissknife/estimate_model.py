@@ -202,6 +202,11 @@ if __name__ == '__main__':
     parser.add_argument('--mask_path', help='path to the mask', required=False, default=None)
     parser.add_argument('--fixed_parameters', help='tuple of fixed parameters', required=False, default=None)
     parser.add_argument('--adjust_parameter_limits', help='tuple of adjusted parameter limits', required=False, default=None)
+    parser.add_argument('--optimization_method', help='optimization method to use', required=False, default='NLS')
+    parser.add_argument('--xgboost_model_path', help='path to the XGBoost model file', required=False, default=None)
+    parser.add_argument('--retrain_xgboost', help='retrain the XGBoost model', required=False, action='store_true')
+    parser.add_argument('--n_cores', help='number of cores to use for the parallelization', required=False, type=int, default=-1)
+    parser.add_argument('--force_cpu', help='debug mode - GPU low memory', required=False, action='store_true')
     parser.add_argument('--debug', help='debug mode', required=False, action='store_true')
     args = parser.parse_args()
 
@@ -209,4 +214,5 @@ if __name__ == '__main__':
     estimate_model(model_name=args.model_name, dwi_path=args.dwi_path, bvals_path=args.bvals_path, delta_path=args.delta_path, 
                    small_delta=args.small_delta, lowb_noisemap_path=args.lowb_noisemap_path, out_path=args.out_path, 
                    mask_path=args.mask_path, fixed_parameters=args.fixed_parameters, adjust_parameter_limits=args.adjust_parameter_limits, 
-                   debug=args.debug)
+                   optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
+                   n_cores=-1, force_cpu=False, debug=args.debug)
