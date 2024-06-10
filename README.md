@@ -73,9 +73,11 @@ The Non-Linear Least Squares method is preferred for the most accurate estimates
 
 `optimization_method`: To use XGBoost, set this setting to `'xgboost'`. The default is `'nls'`.
 
-`xgboost_model_path`: If the model is not yet trained, this setting indicates where the model and its weights will be saved. If the model is already trained, then this setting must indicate where it is saved. The default is None. If `optimization_method` is set to `'xgboost'`, this setting will be required.
+`xgboost_model_path`: If the model is not yet trained, this setting indicates where the model and its weights will be saved. It must end with a `'.json'` extension. If the model is already trained, then this setting must indicate where it is saved. The default is None. If `optimization_method` is set to `'xgboost'`, this setting will be required.
 
 `retrain_xgboost` (Optional): Boolean to indicate if you wish to overwrite the model already trained and saved at the address indicated in xgboost_model_path. The default and recommended setting is False. The safest way is to delete the saved file yourself.
+
+`force_cpu` (Optional): Boolean option to be used only if your training has failed for lack of space on your GPU.
 
 ### Gray Matter microstructure models description from the Generalized Exchange Model
 
