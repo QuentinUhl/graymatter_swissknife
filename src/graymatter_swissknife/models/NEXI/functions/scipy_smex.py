@@ -137,16 +137,16 @@ def expm_2_2(A):
 #######################################################################################################################
 
 
-def smex_signal(tex, Di, De, fi, b, big_delta, small_delta):
+def smex_signal(tex, Di, De, fi, b, delta, small_delta):
     """
     Computes the signal of the SMEX / Nexi Wide Pulses model from the microstructure parameters tex, Di, De and fi
-    and the acquisition parameters b, big_delta and small_delta. b and big_delta must have the same shape.
+    and the acquisition parameters b, delta and small_delta. b and delta must have the same shape.
     """
     if np.isscalar(b):
         b = np.array([b])
-    if np.isscalar(big_delta):
-        big_delta = np.array([big_delta])
-    assert len(b) == len(big_delta), "b and big_delta must have the same length"
+    if np.isscalar(delta):
+        delta = np.array([delta])
+    assert len(b) == len(delta), "b and delta must have the same length"
     assert np.isscalar(small_delta), "𝛿 must be a scalar"
     len_b = len(b)
     return_scalar = True if len_b == 1 else False
@@ -167,14 +167,14 @@ def smex_signal(tex, Di, De, fi, b, big_delta, small_delta):
     f[:, 0] = fi
     f[:, 1] = fb
     # Define the q-value
-    q2 = b / (big_delta - small_delta / 3)
+    q2 = b / (delta - small_delta / 3)
     q = np.sqrt(q2)
     # Flatten the initial solution
     flat_f = f.flatten()
     # Expand dimensions to allow broadcasting
     q = np.expand_dims(q, axis=(1, 2, 3))
     q2 = np.expand_dims(q2, axis=(1, 2, 3))
-    big_delta = np.expand_dims(big_delta, axis=(1, 2, 3))
+    delta = np.expand_dims(delta, axis=(1, 2, 3))
     R = np.expand_dims(R, axis=(0, 1))
     D = np.expand_dims(D, axis=0)
     # Define the shape of the solution
@@ -182,7 +182,7 @@ def smex_signal(tex, Di, De, fi, b, big_delta, small_delta):
     # Solve the differential equation during the first pulse between time 0 and 𝛿
     St = gradient_pulse(flat_f, D, R, small_delta, q, S_shape)
     # Solve the differential equation between the two pulses between time 𝛿 and Δ
-    exp_R_qD = expm_2_2((big_delta - small_delta) * (R - q2 * D))
+    exp_R_qD = expm_2_2((delta - small_delta) * (R - q2 * D))
     St = St.reshape(S_shape)
     St = np.einsum('ijkl, ijl->ijk', exp_R_qD, St.astype(float))
     St = St.flatten()
@@ -228,10 +228,10 @@ def reversed_gradient_pulse(S_delta, D, R, small_delta, q, S_shape):
     return S
 
 
-def smex_signal_from_vector(param, b, big_delta, small_delta):
+def smex_signal_from_vector(param, b, delta, small_delta):
     """ Computes the signal of the Nexi Wide Pulses model from the microstructure parameters vector x and 
-    the acquisition parameters b, big_delta and small_delta. """
-    return smex_signal(param[0], param[1], param[2], param[3], b, big_delta, small_delta)  # [tex, Di, De, f]
+    the acquisition parameters b, delta and small_delta. """
+    return smex_signal(param[0], param[1], param[2], param[3], b, delta, small_delta)  # [tex, Di, De, f]
 
 
 #######################################################################################################################
@@ -252,8 +252,8 @@ def expansion(X, dX_dp):
     return dX_dp-lie_1+lie_2-lie_3+lie_4-lie_5+lie_6
 
 
-def smex_jacobian(tex, Di, De, fi, b, big_delta, small_delta):
-    _, S_jac = smex_jacobian_concatenated(tex, Di, De, fi, b, big_delta, small_delta)
+def smex_jacobian(tex, Di, De, fi, b, delta, small_delta):
+    _, S_jac = smex_jacobian_concatenated(tex, Di, De, fi, b, delta, small_delta)
     return S_jac
 
 
@@ -291,25 +291,25 @@ def gradient_pulse_jacobian(f, D, R, R_tex, D_Di, D_De, R_fi, f_fi, small_delta,
     return S_double
 
 
-def gradient_pulse_jacobian_middle(S_double_small_delta, D, R, R_tex, D_Di, D_De, R_fi, small_delta, big_delta, q2, Sd_shape):
+def gradient_pulse_jacobian_middle(S_double_small_delta, D, R, R_tex, D_Di, D_De, R_fi, small_delta, delta, q2, Sd_shape):
     # Define solution at time Δ
     S_double_small_delta = S_double_small_delta.reshape(Sd_shape).astype(float)
     A = R - q2 * D
-    exponential = expm((big_delta - small_delta) * A)
+    exponential = expm((delta - small_delta) * A)
 
     S_small_delta = S_double_small_delta[0, ...]
     S_double_delta = np.einsum('ijkl,pijl->pijk', exponential, S_double_small_delta)
 
     S_double_delta[1, ...] = (S_double_delta[1, ...] +
                               np.einsum('ijkl,ijl->ijk',
-                                        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((big_delta - small_delta) * A, (big_delta - small_delta) * R_tex)),
+                                        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, (delta - small_delta) * R_tex)),
                                         S_small_delta))
     S_double_delta[2, ...] = S_double_delta[2, ...] + np.einsum('ijkl,ijl->ijk',
-        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((big_delta - small_delta) * A, -(big_delta - small_delta) * q2 * D_Di)), S_small_delta)
+        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, -(delta - small_delta) * q2 * D_Di)), S_small_delta)
     S_double_delta[3, ...] = S_double_delta[3, ...] + np.einsum('ijkl,ijl->ijk',
-        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((big_delta - small_delta) * A, -(big_delta - small_delta) * q2 * D_De)), S_small_delta)
+        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, -(delta - small_delta) * q2 * D_De)), S_small_delta)
     S_double_delta[4, ...] = S_double_delta[4, ...] + np.einsum('ijkl,ijl->ijk',
-        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((big_delta - small_delta) * A, (big_delta - small_delta) * R_fi)), S_small_delta)
+        np.einsum('ijkl,ijlm->ijkm', exponential, expansion((delta - small_delta) * A, (delta - small_delta) * R_fi)), S_small_delta)
 
     S_double_delta_flat = S_double_delta.flatten()
 
@@ -341,8 +341,8 @@ def gradient_pulse_jacobian_reversed(S_double_delta, D, R, R_tex, D_Di, D_De, R_
     return S_double
 
 
-def smex_jacobian_from_vector(param, b, big_delta, small_delta):
-    return smex_jacobian(param[0], param[1], param[2], param[3], b, big_delta, small_delta)  # [tex, Di, De, f]
+def smex_jacobian_from_vector(param, b, delta, small_delta):
+    return smex_jacobian(param[0], param[1], param[2], param[3], b, delta, small_delta)  # [tex, Di, De, f]
 
 
 #######################################################################################################################
@@ -363,8 +363,8 @@ def smex_optimized_mse_jacobian(parameters, acq_parameters, signal_gt):
     return mse_jacobian
 
 
-def smex_jacobian_concatenated(tex, Di, De, fi, b, big_delta, small_delta):
-    assert len(b) == len(big_delta), "b and big_delta must have the same length"
+def smex_jacobian_concatenated(tex, Di, De, fi, b, delta, small_delta):
+    assert len(b) == len(delta), "b and delta must have the same length"
     assert np.isscalar(small_delta), "𝛿 must be a scalar"
     len_b = len(b)
     return_scalar = True if len_b == 1 else False
@@ -400,7 +400,7 @@ def smex_jacobian_concatenated(tex, Di, De, fi, b, big_delta, small_delta):
     f_fi[:, 0] = 1
     f_fi[:, 1] = -1
     # Define the q-value
-    q2 = b / (big_delta - small_delta / 3)
+    q2 = b / (delta - small_delta / 3)
     q = np.sqrt(q2)
     # Compute the signal from the differential equation
     flat_f = f.flatten()
@@ -408,7 +408,7 @@ def smex_jacobian_concatenated(tex, Di, De, fi, b, big_delta, small_delta):
     # Expand dimensions to allow broadcasting
     q = np.expand_dims(q, axis=(1, 2, 3))
     q2 = np.expand_dims(q2, axis=(1, 2, 3))
-    big_delta = np.expand_dims(big_delta, axis=(1, 2, 3))
+    delta = np.expand_dims(delta, axis=(1, 2, 3))
     R = np.expand_dims(R, axis=(0, 1))
     D = np.expand_dims(D, axis=0)
     R_tex = np.expand_dims(R_tex, axis=(0, 1))
@@ -419,7 +419,7 @@ def smex_jacobian_concatenated(tex, Di, De, fi, b, big_delta, small_delta):
     Sd_shape = (5, len_b, len_w, 2)
     # Compute the signal from the differential equation
     St = gradient_pulse_jacobian(flat_f, D, R, R_tex, D_Di, D_De, R_fi, flat_fi, small_delta, q, Sd_shape)
-    St = gradient_pulse_jacobian_middle(St, D, R, R_tex, D_Di, D_De, R_fi, small_delta, big_delta, q2, Sd_shape)
+    St = gradient_pulse_jacobian_middle(St, D, R, R_tex, D_Di, D_De, R_fi, small_delta, delta, q2, Sd_shape)
     St = gradient_pulse_jacobian_reversed(St, D, R, R_tex, D_Di, D_De, R_fi, small_delta, q, Sd_shape)
     # Reshape the signal and
     St = St.reshape(Sd_shape)
@@ -440,5 +440,5 @@ def smex_jacobian_concatenated(tex, Di, De, fi, b, big_delta, small_delta):
 
 def smex_jacobian_concatenated_from_vector(param, acq_parameters):
     return smex_jacobian_concatenated(param[0], param[1], param[2], param[3],
-                                                    acq_parameters.b, acq_parameters.big_delta,
+                                                    acq_parameters.b, acq_parameters.delta,
                                                     acq_parameters.small_delta)  # [tex, Di, De, f]

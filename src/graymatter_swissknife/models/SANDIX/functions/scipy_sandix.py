@@ -27,7 +27,7 @@ from ...struct_functions.scipy_sphere import sphere_murdaycotts, sphere_jacobian
 #######################################################################################################################
 
 
-def sandix_signal(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
+def sandix_signal(tex, Di, De, f, rs, fs, b, delta, small_delta):
     """
     This function computes the SANDIX model. fs_tilde is the volume fraction of the spheres over
     the total volume fraction of both the extra-neurite and intra-axonal compartments. f_tilde is the volume fraction
@@ -41,33 +41,33 @@ def sandix_signal(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
     :param fs: The volume fraction of the spheres over the total volume fraction of both the intra-axonal/dendrite and
     the spheres.
     :param b: The b-value (in ms/µm²)
-    :param big_delta: The diffusion time (in ms)
+    :param delta: The diffusion time (in ms)
     :param small_delta: The pulse width (in ms)
     :return: The signal from the Nexi Sphere model
     """
     fs_tilde = f * fs
     f_tilde = f * (1 - fs) / (1 - fs_tilde)
-    return fs_tilde*sphere_murdaycotts(rs, 3, b, big_delta, small_delta) + (1-fs_tilde)*smex_signal(tex, Di, De, f_tilde, b, big_delta, small_delta)
+    return fs_tilde*sphere_murdaycotts(rs, 3, b, delta, small_delta) + (1-fs_tilde)*smex_signal(tex, Di, De, f_tilde, b, delta, small_delta)
 
 
-def sandix_signal_from_vector(param, b, big_delta, small_delta):
+def sandix_signal_from_vector(param, b, delta, small_delta):
     # param: [tex, Di, De, De, f, rs, fs]
-    return sandix_signal(param[0], param[1], param[2], param[3], param[4], param[5], b, big_delta, small_delta)
+    return sandix_signal(param[0], param[1], param[2], param[3], param[4], param[5], b, delta, small_delta)
 
 #######################################################################################################################
 # SANDIX jacobian
 #######################################################################################################################
 
 
-def sandix_jacobian(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
+def sandix_jacobian(tex, Di, De, f, rs, fs, b, delta, small_delta):
     fs_tilde = f * fs
     f_tilde = f * (1 - fs) / (1 - fs_tilde)
-    nexi_finite_pulses_signal_vec, nexi_vec_jac = smex_jacobian_concatenated(tex, Di, De, f_tilde, b, big_delta, small_delta)
+    nexi_finite_pulses_signal_vec, nexi_vec_jac = smex_jacobian_concatenated(tex, Di, De, f_tilde, b, delta, small_delta)
     # print(nexi_vec_jac_concatenation)
     # nexi_finite_pulses_signal_vec = nexi_vec_jac_concatenation[..., 0]
     # nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:5]
 
-    s_sphere, ds_sphere_dr = sphere_jacobian(rs, 3, b, big_delta, small_delta)
+    s_sphere, ds_sphere_dr = sphere_jacobian(rs, 3, b, delta, small_delta)
 
     s_sandix_jacobian_proxy = np.ones(nexi_vec_jac.shape[:-1] + (6,))
     s_sandix_jacobian_proxy[..., 0:4] = (1 - fs_tilde) * nexi_vec_jac
@@ -83,9 +83,9 @@ def sandix_jacobian(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
     return s_sandix_jacobian
 
 
-def sandix_jacobian_from_vector(param, b, big_delta, small_delta):
+def sandix_jacobian_from_vector(param, b, delta, small_delta):
     # param: [tex, Di, De, De, f, rs, fs]
-    return sandix_jacobian(param[0], param[1], param[2], param[3], param[4], param[5], b, big_delta, small_delta)
+    return sandix_jacobian(param[0], param[1], param[2], param[3], param[4], param[5], b, delta, small_delta)
 
 
 #######################################################################################################################
@@ -93,16 +93,16 @@ def sandix_jacobian_from_vector(param, b, big_delta, small_delta):
 #######################################################################################################################
 
 
-def sandix_concat(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
+def sandix_concat(tex, Di, De, f, rs, fs, b, delta, small_delta):
 
     fs_tilde = f * fs
     f_tilde = f * (1 - fs) / (1 - fs_tilde)
 
-    nexi_signal_vec, nexi_vec_jac = smex_jacobian_concatenated(tex, Di, De, f_tilde, b, big_delta, small_delta)
+    nexi_signal_vec, nexi_vec_jac = smex_jacobian_concatenated(tex, Di, De, f_tilde, b, delta, small_delta)
     # nexi_signal_vec = nexi_vec_jac_concatenation[..., 0]
     # nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:5]
 
-    s_sphere, ds_sphere_dr = sphere_jacobian(rs, 3, b, big_delta, small_delta)
+    s_sphere, ds_sphere_dr = sphere_jacobian(rs, 3, b, delta, small_delta)
 
     s_sandix_concatenated_proxy = np.ones(nexi_vec_jac.shape[:-1] + (7,))
     s_sandix_concatenated_proxy[..., 0] = fs_tilde * s_sphere + (1 - fs_tilde) * nexi_signal_vec
@@ -119,9 +119,9 @@ def sandix_concat(tex, Di, De, f, rs, fs, b, big_delta, small_delta):
     return s_sandix_concatenated
 
 
-def sandix_concatenated_from_vector(param, b, big_delta, small_delta):
+def sandix_concatenated_from_vector(param, b, delta, small_delta):
     # param: [tex, Di, De, De, f, rs, fs]
-    return sandix_concat(param[0], param[1], param[2], param[3], param[4], param[5], b, big_delta, small_delta)
+    return sandix_concat(param[0], param[1], param[2], param[3], param[4], param[5], b, delta, small_delta)
 
 
 #######################################################################################################################
@@ -133,13 +133,13 @@ broad6 = lambda matrix: np.tile(matrix[..., np.newaxis], 6)
 broad7 = lambda matrix: np.tile(matrix[..., np.newaxis], 7)
 
 
-def sandix_optimized_mse_jacobian(param, b, big_delta, small_delta, Y, b_big_delta_dimensions=2):
-    sandix_vec_jac_concatenation = sandix_concatenated_from_vector(param, b, big_delta, small_delta)
+def sandix_optimized_mse_jacobian(param, b, delta, small_delta, Y, b_delta_dimensions=2):
+    sandix_vec_jac_concatenation = sandix_concatenated_from_vector(param, b, delta, small_delta)
     sandix_vec = sandix_vec_jac_concatenation[..., 0]
     sandix_vec_jac = sandix_vec_jac_concatenation[..., 1:7]
-    if b_big_delta_dimensions == 1:
+    if b_delta_dimensions == 1:
         mse_jacobian = np.sum(2 * sandix_vec_jac * broad6(sandix_vec - Y), axis=0)
-    elif b_big_delta_dimensions == 2:
+    elif b_delta_dimensions == 2:
         mse_jacobian = np.sum(2 * sandix_vec_jac * broad6(sandix_vec - Y), axis=(0, 1))
     else:
         raise NotImplementedError
