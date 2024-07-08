@@ -59,4 +59,5 @@ class Sandix(MicroStructModel):
     @classmethod
     def get_mse_jacobian(cls, parameters, acq_parameters, signal_gt):
         """Get jacobian of Mean Square Error from single Ground Truth."""
-        return sandix_optimized_mse_jacobian(parameters, acq_parameters, signal_gt)
+        return sandix_optimized_mse_jacobian(parameters, acq_parameters.b, acq_parameters.delta, acq_parameters.small_delta, 
+                                             signal_gt, acq_parameters.ndim)
