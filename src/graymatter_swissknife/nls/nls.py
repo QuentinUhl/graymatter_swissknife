@@ -30,6 +30,14 @@ def nls_loop(target_signal, microstruct_model, acq_param, nls_param_lim, initial
             x_0[ind_p] = np.random.uniform(nls_param_lim[ind_p][0], nls_param_lim[ind_p][1])
         for constraint in microstruct_model.constraints:
             x_0 = constraint(x_0)
+    
+    # Check if the initial solution is valid, otherwise generate a new random one
+    if np.any(np.isnan(x_0)) | np.any(np.isinf(x_0)):
+        x_0 = np.empty((microstruct_model.n_params,))
+        for ind_p in range(microstruct_model.n_params):
+            x_0[ind_p] = np.random.uniform(nls_param_lim[ind_p][0], nls_param_lim[ind_p][1])
+        for constraint in microstruct_model.constraints:
+            x_0 = constraint(x_0)
 
     # Function to optimize
     optim_fun = lambda x: np.sum(np.square(microstruct_model.get_signal(x, acq_param) - target_signal))

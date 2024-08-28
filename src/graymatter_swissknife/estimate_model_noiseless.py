@@ -130,6 +130,13 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small
             initial_gt = find_nls_initialization(
                 signal, None, voxel_nb, acq_param, microstruct_model, parameter_limits, grid_search_nb_points, debug=debug
             )
+            # Print how many problems were found in the initialization
+            if debug:
+                problematic_init_mask = np.any(np.isinf(initial_gt), axis=1) | np.any(np.isnan(initial_gt), axis=1)
+                number_of_problems = np.sum(problematic_init_mask)
+                if number_of_problems > 0:
+                    logging.info(f"Problems found in the initialization: {np.sum(np.isnan(initial_gt))} out of {voxel_nb} voxels.")
+                    logging.info(f"Some of the problems are: {initial_gt[problematic_init_mask]}")
 
         # Compute the NLS estimations
         estimations, estimation_init = nls_parallel(
