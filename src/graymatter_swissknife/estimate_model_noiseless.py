@@ -8,8 +8,6 @@ from .models.parameters.acq_parameters import AcquisitionParameters
 from .models.parameters.save_parameters import save_estimations_as_nifti
 from .nls.nls import nls_parallel
 from .nls.gridsearch import find_nls_initialization
-from .xgboost.define_xgboost_model import define_xgboost_model
-from .xgboost.apply_xgboost_model import apply_xgboost_model
 
 
 def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small_delta, out_path, 
@@ -151,6 +149,10 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small
         )
     
     elif optimization_method == 'xgboost':
+
+        # Import the XGBoost functions
+        from .xgboost.define_xgboost_model import define_xgboost_model
+        from .xgboost.apply_xgboost_model import apply_xgboost_model
 
         # No initialization in XGBoost
         estimation_init = None
