@@ -3,7 +3,7 @@ from ...models.microstructure_models import MicroStructModel
 from .sandix import Sandix
 from .functions.scipy_sandix import (sandix_signal_from_vector, sandix_jacobian_from_vector,
                                                                 sandix_concatenated_from_vector, broad7)
-from ...models.rice_noise.rice_mean import rice_mean, rice_mean_and_jacobian
+from ...models.noise.rice_mean import rice_mean, rice_mean_and_jacobian
 
 
 class SandixRiceMean(MicroStructModel):
@@ -14,7 +14,7 @@ class SandixRiceMean(MicroStructModel):
     param_names = ["t_ex", "Di", "De", "f", "rs", "fs", "sigma"]
     classic_limits = np.array([[1, 150], [0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5], [0, 100]])
     grid_search_nb_points = [7, 5, 5, 5, 5, 5]  # Optimal would be [12, 8, 5, 5, 5, 5], but it will depends on how much time your machine takes
-    has_rician_mean_correction = True
+    has_noise_correction = True
     non_corrected_model = Sandix()
 
     def __init__(self, param_lim=classic_limits):

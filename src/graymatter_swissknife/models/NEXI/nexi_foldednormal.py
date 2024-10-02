@@ -1,11 +1,11 @@
 from ...models.microstructure_models import MicroStructModel
 from .nexi import Nexi
 from .functions.scipy_nexi import nexi_signal_from_vector, nexi_jacobian_concatenated_from_vector
-from ...models.noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad5
+from ...models.noise.folded_normal_mean import folded_normal_mean, folded_normal_mean_and_jacobian, broad5
 import numpy as np
 
 
-class NexiRiceMean(MicroStructModel):
+class NexiFoldedNormal(MicroStructModel):
     """Neurite Exchange Imaging model for diffusion MRI. Narrow Pulse approximation. Corrected for Rician noise."""
 
     # Class attributes
@@ -17,7 +17,7 @@ class NexiRiceMean(MicroStructModel):
     non_corrected_model = Nexi()
 
     def __init__(self, param_lim=classic_limits):
-        super().__init__(name='NEXI_Rice_Mean')
+        super().__init__(name='NEXI_Folded_Normal')
         self.param_lim = param_lim
         self.constraints = [self.constr_on_diffusivities]
 
@@ -45,7 +45,7 @@ class NexiRiceMean(MicroStructModel):
     @classmethod
     def get_signal(cls, parameters, acq_parameters):
         """Get signal from single Ground Truth."""
-        return rice_mean(nexi_signal_from_vector(parameters[:4], acq_parameters.b, acq_parameters.td), parameters[4])
+        return folded_normal_mean(nexi_signal_from_vector(parameters[:4], acq_parameters.b, acq_parameters.td), parameters[4])
 
     @classmethod
     def get_jacobian(cls, parameters, acq_parameters):
@@ -54,9 +54,9 @@ class NexiRiceMean(MicroStructModel):
         nexi_signal_vec = nexi_vec_jac_concatenation[..., 0]
         nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:]
         # Turn last parameter jacobian to 0 to avoid updates
-        _, nexi_rm_vec_jac = rice_mean_and_jacobian(nexi_signal_vec, parameters[-1], dnu=nexi_vec_jac)
-        # nexi_rm_vec_jac[..., 4] = np.zeros_like(nexi_rm_vec_jac[..., 4])
-        return nexi_rm_vec_jac
+        _, nexi_fn_vec_jac = folded_normal_mean_and_jacobian(nexi_signal_vec, parameters[-1], dnu=nexi_vec_jac)
+        # nexi_fn_vec_jac[..., 4] = np.zeros_like(nexi_fn_vec_jac[..., 4])
+        return nexi_fn_vec_jac
 
     @classmethod
     def get_hessian(cls, parameters, acq_parameters):
@@ -70,11 +70,11 @@ class NexiRiceMean(MicroStructModel):
         nexi_vec_jac_concatenation = nexi_jacobian_concatenated_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.td)
         nexi_signal_vec = nexi_vec_jac_concatenation[..., 0]
         nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:]
-        nexi_rm_signal_vec, nexi_rm_vec_jac = rice_mean_and_jacobian(nexi_signal_vec, parameters[-1], dnu=nexi_vec_jac)
+        nexi_fn_signal_vec, nexi_fn_vec_jac = folded_normal_mean_and_jacobian(nexi_signal_vec, parameters[-1], dnu=nexi_vec_jac)
         if acq_parameters.ndim == 1:
-            mse_jacobian = np.sum(2 * nexi_rm_vec_jac * broad5(nexi_rm_signal_vec - signal_gt), axis=0)
+            mse_jacobian = np.sum(2 * nexi_fn_vec_jac * broad5(nexi_fn_signal_vec - signal_gt), axis=0)
         elif acq_parameters.ndim == 2:
-            mse_jacobian = np.sum(2 * nexi_rm_vec_jac * broad5(nexi_rm_signal_vec - signal_gt), axis=(0, 1))
+            mse_jacobian = np.sum(2 * nexi_fn_vec_jac * broad5(nexi_fn_signal_vec - signal_gt), axis=(0, 1))
         else:
             raise NotImplementedError
         return mse_jacobian

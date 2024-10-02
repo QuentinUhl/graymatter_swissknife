@@ -3,7 +3,7 @@ from ...models.microstructure_models import MicroStructModel
 from .smex import Smex
 from .functions.scipy_smex import smex_signal_from_vector, \
     smex_jacobian_concatenated_from_vector
-from ...models.rice_noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad5
+from ...models.noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad5
 
 
 class SmexRiceMean(MicroStructModel):
@@ -14,7 +14,7 @@ class SmexRiceMean(MicroStructModel):
     param_names = ["t_ex", "Di", "De", "f", "sigma"]
     classic_limits = np.array([[1, 150], [0.1, 3.5], [0.1, 3.5], [0.1, 0.9], [0, 100]])
     grid_search_nb_points = [15, 12, 8, 8]
-    has_rician_mean_correction = True
+    has_noise_correction = True
     non_corrected_model = Smex()
 
     def __init__(self, param_lim=classic_limits):

@@ -3,7 +3,7 @@ from ...models.microstructure_models import MicroStructModel
 from .nexi_dot import NexiDot
 from .functions.scipy_nexi_dot import nexi_dot_signal_from_vector, \
     nexi_dot_jacobian_concatenated_from_vector, nexi_dot_optimized_mse_jacobian
-from ...models.rice_noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad6
+from ...models.noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad6
 
 
 class NexiDotRiceMean(MicroStructModel):
@@ -14,7 +14,7 @@ class NexiDotRiceMean(MicroStructModel):
     param_names = ["t_ex", "Di", "De", "f", "f_dot", "sigma"]
     classic_limits = np.array([[1, 150], [0.1, 3.5], [0.1, 3.5], [0.1, 0.9], [0.0, 0.3], [0, 100]])
     grid_search_nb_points = [15, 12, 8, 8, 6]
-    has_rician_mean_correction = True
+    has_noise_correction = True
     non_corrected_model = NexiDot()
 
     def __init__(self, param_lim=classic_limits):

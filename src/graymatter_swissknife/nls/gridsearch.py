@@ -3,7 +3,8 @@ import numpy as np
 from tqdm import tqdm
 import itertools
 from joblib import Parallel, delayed
-from ..models.rice_noise.rice_mean import rice_mean
+from ..models.noise.rice_mean import rice_mean
+from ..models.noise.folded_normal_mean import folded_normal_mean
 
 
 def find_nls_initialization(
@@ -30,7 +31,7 @@ def find_nls_initialization(
     ), "Number of parameters in the grid search and in the model are different"
 
     # Define number of moving parameters
-    if microstruct_model.has_rician_mean_correction:
+    if microstruct_model.has_noise_correction:
         n_moving_param = microstruct_model.n_params - 1  # -1 because sigma is fixed
     else:
         n_moving_param = microstruct_model.n_params
@@ -52,7 +53,7 @@ def find_nls_initialization(
     parameters = np.array(grid_combinations)
 
     # Generate the non-corrected signal dictionary (or grid)
-    if microstruct_model.has_rician_mean_correction:
+    if microstruct_model.has_noise_correction:
         non_corrected_model = microstruct_model.non_corrected_model
         logging.info(f"Generating {non_corrected_model.name} signal dictionary")
         signal_dict = np.array(
@@ -71,15 +72,28 @@ def find_nls_initialization(
 
     # Find the initial ground truth whether the model has a Rician mean correction or not
     logging.info("Extracting initial Ground Truth from dictionary")
-    if microstruct_model.has_rician_mean_correction:
-        initial_gt = np.array(
-            Parallel(n_jobs=n_cores)(
-                delayed(least_square_argmin_rician_corrected)(
-                    signal[i], sigma[i], signal_dict, parameters, acq_param.ndim
+    if microstruct_model.has_noise_correction:
+        # If the model has noise correction, we need to find the initial GT with the noise correction
+        if microstruct_model.name == "NEXI_Folded_Normal":
+            # Noise correction case : Folded Normal
+            initial_gt = np.array(
+                Parallel(n_jobs=n_cores)(
+                    delayed(least_square_argmin_folded_normal_corrected)(
+                        signal[i], sigma[i], signal_dict, parameters, acq_param.ndim
+                    )
+                    for i in tqdm(range(nb_estimates))
                 )
-                for i in tqdm(range(nb_estimates))
             )
-        )
+        else:
+            # Noise correction case : Rice noise
+            initial_gt = np.array(
+                Parallel(n_jobs=n_cores)(
+                    delayed(least_square_argmin_rician_corrected)(
+                        signal[i], sigma[i], signal_dict, parameters, acq_param.ndim
+                    )
+                    for i in tqdm(range(nb_estimates))
+                )
+            )
         initial_gt = np.hstack((initial_gt, np.array([sigma]).T))
     else:
         initial_gt = np.array(
@@ -137,6 +151,27 @@ def least_square_argmin_rician_corrected(signal_i, sigma_i, initial_signal_dict,
     """
     # Update the signal dictionary with the noise level
     corrected_signal_dict = rice_mean(initial_signal_dict, sigma_i)
+    # Compute the argmin of the least squares function
+    if acq_param_ndim == 2:
+        lstsqr = np.sum(np.square(np.expand_dims(signal_i, axis=0) - corrected_signal_dict), axis=(-2, -1))
+    elif acq_param_ndim == 1:
+        lstsqr = np.sum(np.square(np.expand_dims(signal_i, axis=0) - corrected_signal_dict), axis=-1)
+    else:
+        raise NotImplementedError
+    return parameters[np.unravel_index(lstsqr.argmin(), lstsqr.shape)]
+
+
+def least_square_argmin_folded_normal_corrected(signal_i, sigma_i, initial_signal_dict, parameters, acq_param_ndim):
+    """
+    Compute the argmin of the least squares function for a given not yet corrected signal and noise level.
+    :param signal_i: signal for all b-values (shells) and diffusion times (Deltas)
+    :param signal_dict: signal dictionary
+    :param parameters: parameters of the signal dictionary
+    :param acq_param_ndim: number of dimensions of the acquisition parameters
+    :return: argmin of the least squares function
+    """
+    # Update the signal dictionary with the noise level
+    corrected_signal_dict = folded_normal_mean(initial_signal_dict, sigma_i)
     # Compute the argmin of the least squares function
     if acq_param_ndim == 2:
         lstsqr = np.sum(np.square(np.expand_dims(signal_i, axis=0) - corrected_signal_dict), axis=(-2, -1))

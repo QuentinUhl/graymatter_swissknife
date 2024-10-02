@@ -72,7 +72,8 @@ def rice_mean_and_jacobian(nu, sigma, dnu):
         x = -(nu ** 2) / (2 * nan_sigma ** 2)
         K = hyp1f1(-0.5, 1, x)
         dK = -0.5 * hyp1f1(0.5, 2, x)
-        mu = np.sqrt(np.pi / 2) * nan_sigma * K
+        nan_mu = np.sqrt(np.pi / 2) * nan_sigma * K
+        mu = np.where(sigma == 0, nu, nan_mu)
         dmu_dnu = (
             np.tile((np.sqrt(np.pi / 2) * nan_sigma * dK * (-nu / nan_sigma ** 2))[:, np.newaxis], dnu.shape[-1]) * dnu
         )

@@ -2,7 +2,7 @@ import numpy as np
 from ...models.microstructure_models import MicroStructModel
 from .sandi import Sandi
 from .functions.scipy_sandi import sandi_signal_from_vector, sandi_jacobian_from_vector, sandi_optimized_mse_jacobian
-from ...models.rice_noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad6
+from ...models.noise.rice_mean import rice_mean, rice_mean_and_jacobian, broad6
 
 
 class SandiRiceMean(MicroStructModel):
@@ -13,7 +13,7 @@ class SandiRiceMean(MicroStructModel):
     param_names = ["Di", "De", "f", "rs", "fs", "sigma"]
     classic_limits = np.array([[0.1, 3.5], [0.1, 3.5], [0.05, 0.95], [1, 30], [0.05, 0.5], [0, 100]])
     grid_search_nb_points = [15, 8, 8, 12, 8]
-    has_rician_mean_correction = True
+    has_noise_correction = True
     non_corrected_model = Sandi()
 
     def __init__(self, param_lim=classic_limits):

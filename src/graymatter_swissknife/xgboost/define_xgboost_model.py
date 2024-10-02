@@ -61,7 +61,7 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
         # Plot the application of the model on the test set
         y_hat = xgboost_model.predict(X_test)
         y_hat = np.clip(y_hat, 0, 1)
-        n_params = microstruct_model.n_params if not microstruct_model.has_rician_mean_correction else microstruct_model.n_params - 1
+        n_params = microstruct_model.n_params if not microstruct_model.has_noise_correction else microstruct_model.n_params - 1
         for param_index in range(n_params):
             y_hat[:, param_index] = (
                 y_hat[:, param_index]
