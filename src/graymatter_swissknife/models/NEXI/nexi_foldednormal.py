@@ -54,7 +54,7 @@ class NexiFoldedNormal(MicroStructModel):
         nexi_signal_vec = nexi_vec_jac_concatenation[..., 0]
         nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:]
         # Turn last parameter jacobian to 0 to avoid updates
-        _, nexi_fn_vec_jac = folded_normal_mean_and_jacobian(nexi_signal_vec, parameters[-1], dnu=nexi_vec_jac)
+        _, nexi_fn_vec_jac = folded_normal_mean_and_jacobian(nexi_signal_vec, parameters[-1], dmu=nexi_vec_jac)
         # nexi_fn_vec_jac[..., 4] = np.zeros_like(nexi_fn_vec_jac[..., 4])
         return nexi_fn_vec_jac
 
@@ -70,7 +70,7 @@ class NexiFoldedNormal(MicroStructModel):
         nexi_vec_jac_concatenation = nexi_jacobian_concatenated_from_vector(parameters[:-1], acq_parameters.b, acq_parameters.td)
         nexi_signal_vec = nexi_vec_jac_concatenation[..., 0]
         nexi_vec_jac = nexi_vec_jac_concatenation[..., 1:]
-        nexi_fn_signal_vec, nexi_fn_vec_jac = folded_normal_mean_and_jacobian(nexi_signal_vec, parameters[-1], dnu=nexi_vec_jac)
+        nexi_fn_signal_vec, nexi_fn_vec_jac = folded_normal_mean_and_jacobian(nexi_signal_vec, parameters[-1], dmu=nexi_vec_jac)
         if acq_parameters.ndim == 1:
             mse_jacobian = np.sum(2 * nexi_fn_vec_jac * broad5(nexi_fn_signal_vec - signal_gt), axis=0)
         elif acq_parameters.ndim == 2:
