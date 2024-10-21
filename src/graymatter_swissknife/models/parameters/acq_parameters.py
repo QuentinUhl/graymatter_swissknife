@@ -10,11 +10,12 @@ class AcquisitionParameters(ABC):
         """Initialize the acquisition parameters."""
         # b-values or shells
         self.b = np.array(b)
-        # diffusion time Δ
+        # time of the second pulse Δ
         self.delta = np.array(delta)
         # gradient duration 𝛿
         if small_delta is not None:
             self.small_delta = small_delta
+            # diffusion time td
             self.td = self.delta - self.small_delta / 3
         else:
             logging.warning("The gradient duration 𝛿 is not provided. The diffusion time td=Δ-δ/3 will be equal to Δ only.")

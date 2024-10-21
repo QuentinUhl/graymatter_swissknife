@@ -106,13 +106,23 @@ def find_nls_initialization(
         logging.info(f'initial_gt shape : {initial_gt.shape}')
 
     # Add randomness to the initial GT
-    for parameter in range(len(grid_search_param_lim) - 1):
-        initial_gt[:, parameter] += (
-            (1 + overlap)
-            * (grid_search_param_lim[parameter][1] - grid_search_param_lim[parameter][0])
-            / (grid_search_nb_points[parameter] + 1)
-            * (np.random.rand(nb_estimates) - 0.5)
-        )
+    if microstruct_model.has_noise_correction:
+        # If the model has noise correction, we need to add randomness to the initial GT except to sigma (-1)
+        for parameter in range(len(grid_search_param_lim) - 1):
+            initial_gt[:, parameter] += (
+                (1 + overlap)
+                * (grid_search_param_lim[parameter][1] - grid_search_param_lim[parameter][0])
+                / (grid_search_nb_points[parameter] + 1)
+                * (np.random.rand(nb_estimates) - 0.5)
+            )
+    else:
+        for parameter in range(len(grid_search_param_lim)):
+            initial_gt[:, parameter] += (
+                (1 + overlap)
+                * (grid_search_param_lim[parameter][1] - grid_search_param_lim[parameter][0])
+                / (grid_search_nb_points[parameter] + 1)
+                * (np.random.rand(nb_estimates) - 0.5)
+            )
 
     # Print the first initial ground truth to check
     if debug:

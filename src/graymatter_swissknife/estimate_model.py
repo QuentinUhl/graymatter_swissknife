@@ -105,7 +105,9 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
     if adjust_parameter_limits is not None:
         # Assert that the number of parameters in the model and the number of fixed parameters are the same
         assert (len(adjust_parameter_limits) == microstruct_model.n_params - 1) or (len(adjust_parameter_limits) == microstruct_model.n_params), "The number of parameters in the model and the length of adjust_parameter_limits are different. Set the unchanged parameter limits in the adjust_parameter_limits tuple to None."
-
+        if microstruct_model.has_noise_correction and len(adjust_parameter_limits) == microstruct_model.n_params - 1:
+            adjust_parameter_limits = list(adjust_parameter_limits) + [microstruct_model.classic_limits[-1]]
+        
         # Replace the NLS parameter limits for the fixed parameters
         for i, (adjust_parameter_limits) in enumerate(adjust_parameter_limits):
             if adjust_parameter_limits is not None:
