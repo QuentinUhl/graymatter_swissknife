@@ -4,5 +4,5 @@
 
 from .estimate_model_noiseless import estimate_model_noiseless
 from .estimate_model import estimate_model
-from .estimate_model_folded_normal import estimate_model_folded_normal
+from .deprecated.estimate_model_folded_normal import estimate_model_folded_normal
 from .powderaverage import *

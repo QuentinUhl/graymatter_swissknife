@@ -2,12 +2,12 @@ import os
 import logging
 import argparse
 import numpy as np
-from .powderaverage.powderaverage import powder_average, normalize_sigma, save_data_as_npz
-from .models.find_model import find_model
-from .models.parameters.acq_parameters import AcquisitionParameters
-from .models.parameters.save_parameters import save_estimations_as_nifti
-from .nls.nls import nls_parallel
-from .nls.gridsearch import find_nls_initialization
+from ..powderaverage.powderaverage import powder_average, normalize_sigma, save_data_as_npz
+from ..models.find_model import find_model
+from ..models.parameters.acq_parameters import AcquisitionParameters
+from ..models.parameters.save_parameters import save_estimations_as_nifti
+from ..nls.nls import nls_parallel
+from ..nls.gridsearch import find_nls_initialization
 
 
 def estimate_model_folded_normal(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_noisemap_path, out_path, 
@@ -161,8 +161,8 @@ def estimate_model_folded_normal(model_name, dwi_path, bvals_path, delta_path, s
 
     elif optimization_method == 'xgboost':
         # Import the XGBoost functions
-        from .xgboost.define_xgboost_model import define_xgboost_model
-        from .xgboost.apply_xgboost_model import apply_xgboost_model
+        from ..xgboost.define_xgboost_model import define_xgboost_model
+        from ..xgboost.apply_xgboost_model import apply_xgboost_model
 
         # No initialization in XGBoost
         estimation_init = None
