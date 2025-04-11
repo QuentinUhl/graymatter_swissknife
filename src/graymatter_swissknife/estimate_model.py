@@ -221,7 +221,7 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
 
         # Compute the initial Ground Truth to start the NLS with if requested
         initial_gt = find_nls_initialization_with_xgboost(
-            xgboost_model, signal, sigma, voxel_nb, acq_param, microstruct_model, parameter_limits, grid_search_nb_points, debug=debug
+            xgboost_model, signal, sigma, voxel_nb, acq_param, microstruct_model, grid_search_nb_points, debug=debug
         )
         # Print how many problems were found in the initialization
         if debug:

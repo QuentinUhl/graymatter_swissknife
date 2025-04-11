@@ -210,7 +210,7 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small
 
         # Compute the initial Ground Truth to start the NLS with if requested
         initial_gt = find_nls_initialization_with_xgboost(
-            xgboost_model, signal, None, voxel_nb, acq_param, microstruct_model, parameter_limits, grid_search_nb_points, debug=debug
+            xgboost_model, signal, None, voxel_nb, acq_param, microstruct_model, grid_search_nb_points, debug=debug
         )
         # Print how many problems were found in the initialization
         if debug:

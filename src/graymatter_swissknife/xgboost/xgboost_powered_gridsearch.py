@@ -7,7 +7,7 @@ from ..models.noise.rice_mean import rice_mean
 
 
 def find_nls_initialization_with_xgboost(
-    xgboost_model, signal, sigma, nb_estimates, acq_param, microstruct_model, grid_search_param_lim, grid_search_nb_points, debug=False
+    xgboost_model, signal, sigma, nb_estimates, acq_param, microstruct_model, grid_search_nb_points, debug=False
 ):
     """
     Find the initialization of the Non-linear least squares algorithm.
@@ -16,18 +16,12 @@ def find_nls_initialization_with_xgboost(
     :param nb_estimates: number of ground truth to estimate
     :param acq_param: acquisition parameters
     :param microstruct_model: microstructure model
-    :param grid_search_param_lim: bounds for the grid search
     :param debug: if True, print debug information
     :return: initial_gt: array of optimized initial ground truths for the NLS algorithm
     """
     # Access to grid search hyperparameters
     n_cores = -1  # multiprocessing.cpu_count()
     overlap = 1  # from 0 to 1 : 0 mean no overlap of the grid ranges, 1 means complete overlap
-
-    # Check that the number of parameters in the grid search and in the model are the same
-    assert microstruct_model.n_params == len(
-        grid_search_param_lim
-    ), "Number of parameters in the grid search and in the model are different"
 
     # Define number of moving parameters
     if microstruct_model.has_noise_correction:
@@ -36,21 +30,15 @@ def find_nls_initialization_with_xgboost(
         n_moving_param = microstruct_model.n_params
 
     logging.info(
-        f"Initializing first grid search inside :\n{grid_search_param_lim}\nusing model {microstruct_model.name}\n..."
+        f"Initializing first grid search (between 0 and 1 for each parameter) using model {microstruct_model.name}\n..."
     )
 
     # Generate the parameter grid combinations (avoiding the limits of the bounds)
     param_grid = []
     for p in range(n_moving_param):
-        if grid_search_param_lim[p][0] == grid_search_param_lim[p][1]:
-            # param_grid.append([1])
-            raise NotImplementedError(
-                f"Grid search parameter {p} has the same limits. Not available for XGBoost learning. Please check your grid search parameters."
-            )
-        else:
-            param_grid.append(
-                np.linspace(0, 1, grid_search_nb_points[p] + 2)[1:-1].tolist()
-            )
+        param_grid.append(
+            np.linspace(0, 1, grid_search_nb_points[p] + 2)[1:-1].tolist()
+        )
     grid_combinations = np.array(list(itertools.product(*param_grid)))
     parameters = grid_combinations
 
@@ -90,23 +78,10 @@ def find_nls_initialization_with_xgboost(
         logging.info(f'initial_gt shape : {initial_gt.shape}')
 
     # Add randomness to the initial GT
-    if microstruct_model.has_noise_correction:
-        # If the model has noise correction, we need to add randomness to the initial GT except to sigma (-1)
-        for parameter in range(len(grid_search_param_lim) - 1):
-            initial_gt[:, parameter] += (
-                (1 + overlap)
-                * (grid_search_param_lim[parameter][1] - grid_search_param_lim[parameter][0])
-                / (grid_search_nb_points[parameter] + 1)
-                * (np.random.rand(nb_estimates) - 0.5)
-            )
-    else:
-        for parameter in range(len(grid_search_param_lim)):
-            initial_gt[:, parameter] += (
-                (1 + overlap)
-                * (grid_search_param_lim[parameter][1] - grid_search_param_lim[parameter][0])
-                / (grid_search_nb_points[parameter] + 1)
-                * (np.random.rand(nb_estimates) - 0.5)
-            )
+    for parameter in range(n_moving_param):
+        initial_gt[:, parameter] += (
+            (1 + overlap) * 1 / (grid_search_nb_points[parameter] + 1) * (np.random.rand(nb_estimates) - 0.5)
+        )
 
     # Print the first initial ground truth to check
     if debug:
