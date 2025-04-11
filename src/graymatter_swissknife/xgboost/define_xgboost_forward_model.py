@@ -29,7 +29,7 @@ def define_xgboost_forward_model(xgboost_model_path, retrain_xgboost,
     
     xgboost_model = XGBRegressor(
                                     tree_method="hist", 
-                                    n_estimators=512,
+                                    n_estimators=256,
                                     early_stopping_rounds=64,
                                     n_jobs=n_cores,
                                     max_depth=16,

@@ -43,13 +43,16 @@ def find_nls_initialization_with_xgboost(
     param_grid = []
     for p in range(n_moving_param):
         if grid_search_param_lim[p][0] == grid_search_param_lim[p][1]:
-            param_grid.append([grid_search_param_lim[p][0]])
+            # param_grid.append([1])
+            raise NotImplementedError(
+                f"Grid search parameter {p} has the same limits. Not available for XGBoost learning. Please check your grid search parameters."
+            )
         else:
             param_grid.append(
-                np.linspace(grid_search_param_lim[p][0], grid_search_param_lim[p][1], grid_search_nb_points[p] + 2)[1:-1].tolist()
+                np.linspace(0, 1, grid_search_nb_points[p] + 2)[1:-1].tolist()
             )
-    grid_combinations = list(itertools.product(*param_grid))
-    parameters = np.array(grid_combinations)
+    grid_combinations = np.array(list(itertools.product(*param_grid)))
+    parameters = grid_combinations
 
     # Generate the non-corrected signal dictionary (or grid)
     if microstruct_model.has_noise_correction:
@@ -58,11 +61,7 @@ def find_nls_initialization_with_xgboost(
     else:
         logging.info(f"Generating {microstruct_model.name} signal dictionary using the XGBoost trained model")
     
-    signal_dict = np.array(
-        Parallel(n_jobs=n_cores)(
-            delayed(xgboost_model.predict)(params) for params in tqdm(grid_combinations)
-        )
-    )
+    signal_dict = xgboost_model.predict(grid_combinations)
 
     if debug:
         logging.info(f"Signal dictionary shape : {signal_dict.shape}")

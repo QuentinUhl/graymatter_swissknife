@@ -200,8 +200,12 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small
 
         # Define the XGBoost model from a file or generate and train it
         n_training_samples = 1000000
+        if microstruct_model.has_noise_correction:
+            xgb_forward_model = microstruct_model.non_corrected_model
+        else:
+            xgb_forward_model = microstruct_model
         xgboost_model = define_xgboost_forward_model(xgboost_model_path, retrain_xgboost, 
-                                                     microstruct_model, acq_param, n_training_samples, force_cpu, n_cores)
+                                                     xgb_forward_model, acq_param, n_training_samples, force_cpu, n_cores)
         
 
         # Compute the initial Ground Truth to start the NLS with if requested
@@ -227,11 +231,9 @@ def estimate_model_noiseless(model_name, dwi_path, bvals_path, delta_path, small
             signal,
             voxel_nb,
             microstruct_model,
-            acq_param,
             nls_param_lim=parameter_limits,
             max_nls_verif=max_nls_verif,
-            initial_gt=initial_gt,
-            n_cores=n_cores
+            initial_gt=initial_gt
         )
     
     else:
