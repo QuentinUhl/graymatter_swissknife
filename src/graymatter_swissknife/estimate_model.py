@@ -5,13 +5,14 @@ import numpy as np
 from .powderaverage.powderaverage import powder_average, normalize_sigma, save_data_as_npz
 from .models.find_model import find_model
 from .models.parameters.acq_parameters import AcquisitionParameters
-from .models.parameters.save_parameters import save_estimations_as_nifti
+from .models.parameters.save_parameters import save_estimations_as_nifti, save_initialization_as_nifti
 from .nls.nls import nls_parallel
 from .nls.gridsearch import find_nls_initialization
 
 
 def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_noisemap_path, out_path, 
                    mask_path=None, fixed_parameters=None, adjust_parameter_limits=None, 
+                   save_nls_initialization=False,
                    optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
                    n_cores=-1, force_cpu=False, debug=False):
     """
@@ -27,8 +28,7 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
     delta_path : str
         Path to the big delta file. Δ must be provided in ms.
     small_delta : float
-        Small delta value in ms. This value is optional for NEXI (NEXI with Narrow Pulse Approximation (NPA)) but is mandatory for other models.
-        If using NEXI with NPA, set small_delta to None.
+        Small delta value in ms.
     lowb_noisemap_path : str
         Path to the low b-values (b < 2ms/µm²) noise map.
     out_path : str
@@ -147,6 +147,10 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
                 if number_of_problems > 0:
                     logging.info(f"Problems found in the initialization: {np.sum(np.isnan(initial_gt))} out of {voxel_nb} voxels.")
                     logging.info(f"Some of the problems are: {initial_gt[problematic_init_mask]}")
+            
+            # Save the initialization as nifti
+            if save_nls_initialization:
+                save_initialization_as_nifti(initial_gt, microstruct_model, powder_average_path, updated_mask_path, out_path)
 
         # Compute the NLS estimations
         estimations, estimation_init = nls_parallel(
@@ -212,6 +216,7 @@ if __name__ == '__main__':
     parser.add_argument('--mask_path', help='path to the mask', required=False, default=None)
     parser.add_argument('--fixed_parameters', help='tuple of fixed parameters', required=False, default=None)
     parser.add_argument('--adjust_parameter_limits', help='tuple of adjusted parameter limits', required=False, default=None)
+    parser.add_argument('--save_nls_initialization', help='boolean to save the Non-Linear Least Square initialization', required=False, default=False)
     parser.add_argument('--optimization_method', help='optimization method to use', required=False, default='NLS')
     parser.add_argument('--xgboost_model_path', help='path to the XGBoost model file', required=False, default=None)
     parser.add_argument('--retrain_xgboost', help='retrain the XGBoost model', required=False, action='store_true')
@@ -224,5 +229,7 @@ if __name__ == '__main__':
     estimate_model(model_name=args.model_name, dwi_path=args.dwi_path, bvals_path=args.bvals_path, delta_path=args.delta_path, 
                    small_delta=args.small_delta, lowb_noisemap_path=args.lowb_noisemap_path, out_path=args.out_path, 
                    mask_path=args.mask_path, fixed_parameters=args.fixed_parameters, adjust_parameter_limits=args.adjust_parameter_limits, 
-                   optimization_method='NLS', xgboost_model_path=None, retrain_xgboost=False,
-                   n_cores=-1, force_cpu=False, debug=args.debug)
+                   save_nls_initialization=args.save_nls_initialization,
+                   optimization_method=args.optimization_method, 
+                   xgboost_model_path=args.xgboost_model_path, retrain_xgboost=args.retrain_xgboost,
+                   n_cores=args.n_cores, force_cpu=args.force_cpu, debug=args.debug)
