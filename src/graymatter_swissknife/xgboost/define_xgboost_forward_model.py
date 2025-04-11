@@ -98,7 +98,7 @@ def define_xgboost_forward_model(xgboost_model_path, retrain_xgboost,
             plt.plot([min_val, max_val], [min_val, max_val], color="black", linestyle="--")
             plt.xlabel(f"Target signal")
             plt.ylabel(f"Predicted signal")
-            plt.title(fr'$b={acq_param.b[acquisition_index]} ms/ \mu m^2$, $ \Delta={acq_param.delta[acquisition_index]} ms$, $ \delta={acq_param.small_delta[acquisition_index]} ms$')
+            plt.title(fr'$b={acq_param.b[acquisition_index]} ms/ \mu m^2$, $ \Delta={acq_param.delta[acquisition_index]} ms$, $ \delta={acq_param.small_delta} ms$')
         plt.tight_layout()
         plt.savefig(xgboost_test_plot_path)
 
