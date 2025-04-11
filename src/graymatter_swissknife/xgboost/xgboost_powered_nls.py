@@ -143,11 +143,16 @@ def xgboost_powered_nls_loop_verified(xgboost_model, target_signal, microstruct_
     nls_loop_return = xgboost_powered_nls_loop(xgboost_model, target_signal, microstruct_model, nls_param_lim, initial_gt)
     x_sol, x_0 = nls_loop_return[0], nls_loop_return[1]
     iter_nb = 1
-    while touch_border(x_sol, nls_param_lim, microstruct_model.n_params) and iter_nb < max_nls_verif:
+    if not microstruct_model.has_noise_correction:
+        n_moving_param = microstruct_model.n_params
+    else:
+        n_moving_param = microstruct_model.n_params - 1
+
+    while touch_border(x_sol, nls_param_lim, n_moving_param) and iter_nb < max_nls_verif:
         nls_loop_return = xgboost_powered_nls_loop(xgboost_model, target_signal, microstruct_model, nls_param_lim, initial_gt=None)
         x_sol, x_0 = nls_loop_return[0], nls_loop_return[1]
         iter_nb += 1
-    if touch_border(x_sol, nls_param_lim, microstruct_model.n_params) and iter_nb == max_nls_verif:
+    if touch_border(x_sol, nls_param_lim, n_moving_param) and iter_nb == max_nls_verif:
         verif_failed = 1
         # logging.info("Border touched " + str(int(max_nls_verif)) + " times !")
     else:
