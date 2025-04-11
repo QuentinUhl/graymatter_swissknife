@@ -1,4 +1,5 @@
 import os
+import logging
 from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from .generate_dataset import generate_dataset
@@ -42,9 +43,11 @@ def define_xgboost_model(xgboost_model_path, retrain_xgboost,
     # Check if the path leads to an existing file
     if os.path.exists(xgboost_model_path) and not retrain_xgboost:
         # Load the XGBoost model
+        logging.info(f"Existing XGBoost model found at {xgboost_model_path}. Loading it.")
         xgboost_model.load_model(xgboost_model_path)
     else:
         # Generate the dataset
+        logging.info(f"Generating dataset to build the XGBoost model and save it to {xgboost_model_path}.")
         n_samples = 125*n_training_samples//100  # 25% more samples to account for the test and validation sets
         synthetic_signal, _, normalized_param = generate_dataset(microstruct_model, acq_param, n_samples, sigma, n_cores)
 
