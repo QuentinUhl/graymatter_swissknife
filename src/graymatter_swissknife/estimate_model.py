@@ -129,8 +129,12 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
     
     # Check the optimization method
     optimization_method = optimization_method.lower()
-    assert optimization_method in ['nls', 'xgboost'], "The optimization method must be 'NLS' or 'XGBoost'."
+    assert optimization_method in ['nls', 'xgboost', 'xgboost_powered_nls'], "The optimization method must be 'NLS' or 'XGBoost'."
 
+    ##########################################################################
+    # NLS
+    ##########################################################################
+    
     if optimization_method == 'nls':
 
         # Compute the initial Ground Truth to start the NLS with if requested
@@ -164,6 +168,11 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
             n_cores=n_cores
         )
 
+    
+    ##########################################################################
+    # XGBoost
+    ##########################################################################
+
     elif optimization_method == 'xgboost':
         # Import the XGBoost functions
         from .xgboost.define_xgboost_model import define_xgboost_model
@@ -182,6 +191,59 @@ def estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lo
         
         # Apply the XGBoost model
         estimations = apply_xgboost_model(xgboost_model, signal, microstruct_model)
+    
+    ##########################################################################
+    # XGBoost_powered_NLS
+    ##########################################################################
+
+    elif optimization_method == 'xgboost_powered_nls':
+
+        # Import the XGBoost functions
+        from .xgboost.define_xgboost_forward_model import define_xgboost_forward_model
+        from .xgboost.xgboost_powered_nls import xgboost_powered_nls_parallel
+        from .xgboost.xgboost_powered_gridsearch import find_nls_initialization_with_xgboost
+
+        # No initialization in XGBoost
+        estimation_init = None
+
+        # Check if the XGBoost model path is provided
+        assert xgboost_model_path is not None, "The XGBoost model path must be provided, either to save or load the model."
+
+        # Define the XGBoost model from a file or generate and train it
+        n_training_samples = 1000000
+        xgboost_model = define_xgboost_forward_model(xgboost_model_path, retrain_xgboost, 
+                                                     microstruct_model, acq_param, n_training_samples, force_cpu, n_cores)
+        
+
+        # Compute the initial Ground Truth to start the NLS with if requested
+        initial_gt = find_nls_initialization_with_xgboost(
+            xgboost_model, signal, sigma, voxel_nb, acq_param, microstruct_model, parameter_limits, grid_search_nb_points, debug=debug
+        )
+        # Print how many problems were found in the initialization
+        if debug:
+            problematic_init_mask = np.any(np.isinf(initial_gt), axis=1) | np.any(np.isnan(initial_gt), axis=1)
+            number_of_problems = np.sum(problematic_init_mask)
+            if number_of_problems > 0:
+                logging.info(f"Problems found in the initialization: {np.sum(np.isnan(initial_gt))} out of {voxel_nb} voxels.")
+                logging.info(f"Some of the problems are: {initial_gt[problematic_init_mask]}")
+        
+        
+        # Save the initialization as nifti
+        if save_nls_initialization:
+            save_initialization_as_nifti(initial_gt, microstruct_model, powder_average_path, updated_mask_path, out_path)
+
+        # Compute the NLS estimations
+        estimations, estimation_init = xgboost_powered_nls_parallel(
+            xgboost_model, 
+            signal,
+            voxel_nb,
+            microstruct_model,
+            acq_param,
+            nls_param_lim=parameter_limits,
+            max_nls_verif=max_nls_verif,
+            initial_gt=initial_gt,
+            n_cores=n_cores
+        )
     
     else:
         raise ValueError("The optimization method must be 'NLS' or 'XGBoost'.")
