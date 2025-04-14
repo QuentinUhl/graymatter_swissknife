@@ -72,10 +72,18 @@ def xgboost_powered_nls_parallel(xgboost_model, signal, N, microstruct_model, nl
 
     # NLS_loop_verified is NLS_loop run several times until NLS doesn't output any boundary. Defined below.
     verif_failed_count = 0
-    for index in range(N):
-        x_sol[index] = x_parallel[index][0]
-        x_0[index] = x_parallel[index][1]
-        verif_failed_count += x_parallel[index][2]
+    if not microstruct_model.has_noise_correction:
+        for index in range(N):
+            x_sol[index] = x_parallel[index][0]
+            x_0[index] = x_parallel[index][1]
+            verif_failed_count += x_parallel[index][2]
+    else:
+        for index in range(N):
+            x_sol[index, :-1] = x_parallel[index][0]
+            x_0[index, :-1] = x_parallel[index][1]
+            verif_failed_count += x_parallel[index][2]
+        x_sol[:, -1] = sigma
+        x_0[:, -1] = sigma
 
     # Multiply the results by the limits to get the real values (XGBoost version)
     # x_sol and x_0 are in [0, 1] so we need to multiply by the limits to get the real values

@@ -86,7 +86,7 @@ def find_nls_initialization_with_xgboost(
     # Print the first initial ground truth to check
     if debug:
         for p_ind, param_name in enumerate(microstruct_model.param_names):
-            logging.info(f'First initial_gt {param_name} : {initial_gt[0, p_ind]}')
+            logging.info(f'First normalized initial_gt {param_name} : {initial_gt[0, p_ind]}')
     logging.info("First Grid Search completed\n")
     return initial_gt
 
