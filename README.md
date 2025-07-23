@@ -71,7 +71,7 @@ estimate_model(model_name, dwi_path, bvals_path, delta_path, small_delta, lowb_n
 > 
 > This package is not designed to run on personal laptops. It requires at least a 20-CPU machine or a high-performance computing cluster.
 > 
-> Some models are computationally intensive. The NLS model is the recommended solution for achieving high-quality fits. While the XGBoost model can produce nicer-looking images, its fitting quality is currently inferior and remains a work in progress.
+> Some models are computationally intensive. The NLS model is the recommended solution for achieving high-quality fits. While the XGBoost model can run on your laptop and produce nicer-looking images, its fitting quality is currently inferior and remains a work in progress.
 > 
 > XGBoost may be sufficient for certain applications, but we strongly encourage the use of the NLS model whenever possible.
 
